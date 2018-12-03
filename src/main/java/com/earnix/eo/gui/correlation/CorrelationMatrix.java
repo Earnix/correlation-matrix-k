@@ -52,7 +52,7 @@ public class CorrelationMatrix extends JPanel {
         this.data = Objects.requireNonNull(data);
         this.dataSqr = Objects.requireNonNull(dataSqr);
 
-        if (dataTypes.length != titles.size() || titles.size() != data.length || data.length != dataSqr.length) {
+        if (/*dataTypes.length != titles.size() ||*/ titles.size() != data.length || data.length != dataSqr.length) {
             throw new IllegalArgumentException();
         }
 
@@ -60,13 +60,13 @@ public class CorrelationMatrix extends JPanel {
         val graph = new CorrelationMatrixGraph(this);
         add(graph, BorderLayout.CENTER);
 
-        val legend = new CorrelateionMatrixLegend(this);
+        val legend = new CorrelationMatrixLegend(this);
         legend.setPreferredSize(new Dimension(40, 40));
         legend.setMinimumSize(new Dimension(40, 40));
         add(legend, BorderLayout.EAST);
     }
 
-    int length() {
+    public int length() {
         return titles.size();
     }
 }

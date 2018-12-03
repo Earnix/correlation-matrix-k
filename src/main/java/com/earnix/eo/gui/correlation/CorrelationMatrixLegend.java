@@ -11,10 +11,13 @@ import java.awt.Graphics2D;
  * @author Taras Maslov
  * 11/26/2018
  */
-public class CorrelateionMatrixLegend extends JComponent {
-    
+public class CorrelationMatrixLegend extends JComponent {
 
-    public CorrelateionMatrixLegend(CorrelationMatrix matrix) {
+
+    private final CorrelationMatrix matrix;
+
+    CorrelationMatrixLegend(CorrelationMatrix matrix) {
+        this.matrix = matrix;
         setPreferredSize(new Dimension(40, 0));
     }
     
@@ -23,8 +26,7 @@ public class CorrelateionMatrixLegend extends JComponent {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-
-        g2d.setPaint(new GradientPaint(0, 0, Color.red, getWidth(), getHeight(), Color.blue));
+        g2d.setPaint(new GradientPaint(0, 0, matrix.getColor1(), getWidth(), getHeight(), matrix.getColor2()));
 
         g2d.fillRect(0, 0, getWidth(), getHeight());
     }
