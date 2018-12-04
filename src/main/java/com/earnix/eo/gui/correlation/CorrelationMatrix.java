@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.val;
 
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -56,14 +57,18 @@ public class CorrelationMatrix extends JPanel {
             throw new IllegalArgumentException();
         }
 
-        setLayout(new BorderLayout());
+        val layout = new BorderLayout();
+        layout.setHgap(20);
+        setLayout(layout);
         val graph = new CorrelationMatrixGraph(this);
         add(graph, BorderLayout.CENTER);
 
+
         val legend = new CorrelationMatrixLegend(this);
-        legend.setPreferredSize(new Dimension(40, 40));
-        legend.setMinimumSize(new Dimension(40, 40));
+        legend.setPreferredSize(new Dimension(80, 40));
         add(legend, BorderLayout.EAST);
+        
+        setBackground(Color.WHITE);
     }
 
     public int length() {
