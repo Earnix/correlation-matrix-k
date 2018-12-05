@@ -3,30 +3,33 @@ package com.earnix.eo.gui.correlation;
 import lombok.val;
 import lombok.var;
 
-import javax.swing.JComponent;
+import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
+import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 
 /**
  * @author Taras Maslov
  * 11/26/2018
  */
-public class CorrelationMatrixLegend extends JComponent {
+public class TemperatureScalePanel extends JPanel {
 
-    private final int GRADIENT_WIDTH = 20;
-    private final int LABELS_COUNT = 10;
-    private final int LABELS_WIDTH = 10;
-    private final int LABELS_MARGIN = 5;
-
+    private static final int GRADIENT_WIDTH = 20;
+    private static final int LABELS_COUNT = 10;
+    private static final int LABELS_WIDTH = 20;
+    private static final int LABELS_MARGIN = 5;
+    private static final int FONT_SIZE = 12;
+    
     private final CorrelationMatrix matrix;
 
-    CorrelationMatrixLegend(CorrelationMatrix matrix) {
+    TemperatureScalePanel(CorrelationMatrix matrix) {
         this.matrix = matrix;
         setPreferredSize(new Dimension(getDefinedWidth(), 0));
+        setBackground(Color.WHITE);
     }
 
     private int getDefinedWidth() {
@@ -36,21 +39,22 @@ public class CorrelationMatrixLegend extends JComponent {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        Graphics2D g2d = (Graphics2D) g;
+        val g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
+        // drawing gradient rect
         val gradientEnd = new Point2D.Double();
         gradientEnd.setLocation(0, getHeight());
-
         val gradientFractions = new float[]{0, 0.5f, 1};
         val gradientColors = new Color[]{matrix.getPositiveColor(), Color.WHITE, matrix.getNegativeColor()};
         val paint = new LinearGradientPaint(0, 0, 0, getHeight(), gradientFractions, gradientColors);
         g2d.setPaint(paint);
-
         g2d.fillRect(0, 0, GRADIENT_WIDTH, getHeight());
 
+        // drawing labels
         g2d.setColor(Color.black);
-        g2d.setFont(matrix.getFont().deriveFont(12f));
-
+        g2d.setFont(matrix.getFont().deriveFont((float) FONT_SIZE));
         var current = 1.0;
         val step = 2 / (float) LABELS_COUNT;
         val heightStep = getHeight() / LABELS_COUNT;

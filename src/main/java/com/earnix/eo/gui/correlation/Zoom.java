@@ -8,7 +8,7 @@ import java.util.List;
  * 12/3/2018
  */
 public class Zoom {
-    int zoomLength;
+    int length;
 
     int startI;
     int startJ;

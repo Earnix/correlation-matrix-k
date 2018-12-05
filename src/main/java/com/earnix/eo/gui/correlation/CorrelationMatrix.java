@@ -11,7 +11,6 @@ import lombok.val;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +45,9 @@ public class CorrelationMatrix extends JPanel {
     @Getter @Setter
     int compactCellSize = 16;
 
+    @Getter @Setter
+    Color linesColor = new Color(0x7F000000, true);
+    
     /**
      * @param dataTypes
      * @param titles
@@ -68,9 +70,7 @@ public class CorrelationMatrix extends JPanel {
         val graph = new CorrelationMatrixGraph(this);
         add(graph, BorderLayout.CENTER);
 
-
-        val legend = new CorrelationMatrixLegend(this);
-        legend.setPreferredSize(new Dimension(80, 40));
+        val legend = new TemperatureScalePanel(this);
         add(legend, BorderLayout.EAST);
         
         setBackground(Color.WHITE);
