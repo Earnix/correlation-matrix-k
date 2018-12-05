@@ -2,11 +2,12 @@ package com.earnix.eo.gui.correlation;
 
 //import com.earnix.eo.datatypes.DataType;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import lombok.val;
 
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,28 +20,31 @@ import java.util.Objects;
  * @author Taras Maslov
  * 11/26/2018
  */
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CorrelationMatrix extends JPanel {
 
-    @Getter
-    private final List<String> titles;
+    @Getter final List<String> titles;
 
-    @Getter
-    private final double[][] data;
+    @Getter final double[][] data;
 
-    @Getter
-    private final double[][] dataSqr;
-
-    @Getter @Setter
-    private Color color1 = new Color(0xfa7b64);
+    @Getter final double[][] dataSqr;
+    
+    @Getter final List<CellType> dataTypes;
 
     @Getter @Setter
-    private Color color2 = new Color(0x274184);
+    Color color1 = new Color(0xfa7b64);
 
     @Getter @Setter
-    private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
+    Color color2 = new Color(0x274184);
 
     @Getter @Setter
-    private int compactSize = 500;
+    Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
+
+//    @Getter @Setter
+//    int compactSize = 500;
+
+    @Getter @Setter
+    int compactCellSize = 16;
 
     /**
      * @param dataTypes
@@ -48,12 +52,13 @@ public class CorrelationMatrix extends JPanel {
      * @param data
      * @param dataSqr
      */
-    public CorrelationMatrix(Object[] dataTypes, List<String> titles, double[][] data, double[][] dataSqr) {
+    public CorrelationMatrix(List<CellType> dataTypes, List<String> titles, double[][] data, double[][] dataSqr) {
+        this.dataTypes = dataTypes;
         this.titles = Objects.requireNonNull(titles);
         this.data = Objects.requireNonNull(data);
         this.dataSqr = Objects.requireNonNull(dataSqr);
 
-        if (/*dataTypes.length != titles.size() ||*/ titles.size() != data.length || data.length != dataSqr.length) {
+        if (dataTypes.size() != titles.size() || titles.size() != data.length || data.length != dataSqr.length) {
             throw new IllegalArgumentException();
         }
 

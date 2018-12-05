@@ -21,7 +21,7 @@ public class CorrelationMatrixLegend extends JComponent {
     private final int LABELS_COUNT = 10;
     private final int LABELS_WIDTH = 20;
     private final int LABELS_MARGIN = 5;
-    
+
     private final CorrelationMatrix matrix;
 
     CorrelationMatrixLegend(CorrelationMatrix matrix) {
@@ -32,7 +32,7 @@ public class CorrelationMatrixLegend extends JComponent {
     private int getDefinedWidth() {
         return GRADIENT_WIDTH + LABELS_WIDTH + LABELS_MARGIN * 2;
     }
-    
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -40,8 +40,10 @@ public class CorrelationMatrixLegend extends JComponent {
 
         val gradientEnd = new Point2D.Double();
         gradientEnd.setLocation(0, getHeight());
-        val paint = new LinearGradientPaint(0, 0, 0, getHeight(), new float[]{0, 0.5f, 1},
-                new Color[]{matrix.getColor1(), Color.WHITE, matrix.getColor2()});
+
+        val gradientFractions = new float[]{0, 0.5f, 1};
+        val gradientColors = new Color[]{matrix.getColor1(), Color.WHITE, matrix.getColor2()};
+        val paint = new LinearGradientPaint(0, 0, 0, getHeight(), gradientFractions, gradientColors);
         g2d.setPaint(paint);
 
         g2d.fillRect(0, 0, GRADIENT_WIDTH, getHeight());
@@ -56,6 +58,6 @@ public class CorrelationMatrixLegend extends JComponent {
             g2d.drawString(String.format("%.2f", current), GRADIENT_WIDTH + LABELS_MARGIN, i * heightStep);
             current -= step;
         }
-        
+
     }
 }
