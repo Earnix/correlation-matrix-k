@@ -30,7 +30,9 @@ import java.util.List;
  */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CorrelationMatrixGraph extends JPanel implements MouseListener, MouseMotionListener {
+
     private final float CIRCLE_WIDTH = 0.8f;
+    private static final double DEFAULT_SQUEEZE_COEFFICIENT = 0.8;
 
     CorrelationMatrix matrix;
 
@@ -128,22 +130,29 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
     }
 
     private void paintHighlights(Graphics2D g2d) {
-        val highlightColor = new Color(0xB2e3d7b4, true);
+        val highlightColor = matrix.getHighlightColor();
         g2d.setColor(highlightColor);
         g2d.fillRect(0, (int) (highlightJ * cellSize), getWidth(), (int) cellSize);
         g2d.fillRect((int) (highlightI * cellSize + titlesCellWidth), 0, (int) cellSize, getHeight());
+    }
+
+    double getValue(int i, int j) {
+        double value;
+        if (matrix.getData()[i][j] < 0) {
+            value = -matrix.getDataSqr()[i][j];
+        } else {
+            value = matrix.getDataSqr()[i][j];
+        }
+        return value;
     }
 
     private Cell createCell(int i, int j) {
         val cell = new Cell();
         cell.x = titlesCellWidth + i * cellSize;
         cell.y = j * cellSize;
-        if (matrix.getData()[i][j] < 0) {
-            cell.value = -matrix.getDataSqr()[i][j];
-        } else {
-            cell.value = -matrix.getDataSqr()[i][j];
-        }
+        cell.value = getValue(i, j);
         cell.size = cellSize;
+        cell.compact = isCompact();
         return cell;
     }
 
@@ -158,16 +167,16 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         double radiusY = cellSize - margin * 2;
         double radiusX;
 
-        radiusX = (cellSize - margin * 2 /* radius margin */) * (1.0 - Math.abs(cell.value) /* squeezeCoefficient */);
-        //		- radiusX / 2;
+        radiusX = (cellSize - margin * 2 /* radius margin */) * (1.0
+                - Math.abs(cell.value) * DEFAULT_SQUEEZE_COEFFICIENT);
 
         Color fillColor;
         double rotation;
         if (cell.value > 0) {
-            fillColor = matrix.getColor1();
+            fillColor = matrix.getPositiveColor();
             rotation = Math.PI / 4;
         } else {
-            fillColor = matrix.getColor2();
+            fillColor = matrix.getNegativeColor();
             rotation = -Math.PI / 4;
         }
 
@@ -208,56 +217,54 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         Zoom zoom = new Zoom();
         zoom.zoomLength = Math.min(5, matrix.length());
 
-        zoom.zoomStartI = Math.min(Math.max(i - zoom.zoomLength / 2, 0), matrix.length() - zoom.zoomLength);
-        zoom.zoomStartJ = Math.min(Math.max(j - zoom.zoomLength / 2, 0), matrix.length() - zoom.zoomLength);
+        zoom.startI = Math.min(Math.max(i - zoom.zoomLength / 2, 0), matrix.length() - zoom.zoomLength);
+        zoom.startJ = Math.min(Math.max(j - zoom.zoomLength / 2, 0), matrix.length() - zoom.zoomLength);
 
         zoom.zoomSelectionSize = 5 * cellSize;
-
-
-        zoom.zoomCellSize = cellSize; // todo expose
-        zoom.font = matrix.getFont().deriveFont((float) zoom.zoomCellSize);
-        //        g2d.setFont(zoom.font);
-        zoom.horizontalLabels = matrix.getTitles().subList(zoom.zoomStartJ, zoom.zoomStartJ + zoom.zoomLength);
+        zoom.cellSize = cellSize; // todo expose
+        zoom.font = matrix.getFont().deriveFont((float) zoom.cellSize);
+        zoom.horizontalLabels = matrix.getTitles().subList(zoom.startJ, zoom.startJ + zoom.zoomLength);
         zoom.horizontalLabelsWidth = getLabelsWidth(zoom.horizontalLabels, g2d);
 
-        zoom.verticalLabels = matrix.getTitles().subList(zoom.zoomStartI, zoom.zoomStartI + zoom.zoomLength);
+        zoom.verticalLabels = matrix.getTitles().subList(zoom.startI, zoom.startI + zoom.zoomLength);
         zoom.verticalLabelsWidth = getLabelsWidth(zoom.verticalLabels, g2d);
 
-        zoom.zoomCellsSize = zoom.zoomCellSize * zoom.zoomLength;
-        zoom.zoomWidth = zoom.horizontalLabelsWidth + zoom.zoomCellsSize;
-        zoom.zoomHeight = zoom.verticalLabelsWidth + zoom.zoomCellsSize;
-        zoom.zoomX = titlesCellWidth + (matrix.length() * cellSize) - zoom.zoomWidth;
-        zoom.zoomY = 0;
+        zoom.cellsSize = zoom.cellSize * zoom.zoomLength;
+        zoom.width = zoom.horizontalLabelsWidth + zoom.cellsSize;
+        zoom.height = zoom.verticalLabelsWidth + zoom.cellsSize;
+        zoom.x = titlesCellWidth + (matrix.length() * cellSize) - zoom.width;
+        zoom.y = 0;
 
         return zoom;
     }
 
     private void paintZoom(Zoom zoom, Graphics2D g2d) {
 
-        g2d.setColor(Color.black);
         // zoom border
         g2d.setColor(Color.black);
         g2d.setStroke(new BasicStroke(2));
-        g2d.drawRect((int) (zoom.zoomStartI * cellSize + titlesCellWidth), (int) (zoom.zoomStartJ * cellSize),
+        g2d.drawRect((int) (zoom.startI * cellSize + titlesCellWidth), (int) (zoom.startJ * cellSize),
                 (int) zoom.zoomSelectionSize, (int) zoom.zoomSelectionSize);
         g2d.setStroke(new BasicStroke(1));
         g2d.setFont(zoom.font);
-        g2d.clearRect((int) zoom.zoomX, (int) zoom.zoomY, (int) zoom.zoomWidth, (int) zoom.zoomHeight);
-        g2d.drawRect((int) zoom.zoomX, (int) zoom.zoomY, (int) zoom.zoomWidth, (int) zoom.zoomHeight);
+        g2d.clearRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
+        g2d.drawRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
 
         // drawing zoom cells
         for (int l = 0; l < zoom.zoomLength; l++) {
             for (int m = 0; m < zoom.zoomLength; m++) {
-                if (zoom.zoomStartI + l < zoom.zoomStartJ + m) {
-                    int x = (int) (zoom.zoomX + zoom.zoomWidth - zoom.zoomCellsSize + l * zoom.zoomCellSize);
-                    int y = (int) (zoom.zoomY + zoom.zoomHeight - zoom.zoomCellsSize + m * zoom.zoomCellSize);
-                    double value = matrix.getDataSqr()[zoom.zoomStartI + l][zoom.zoomStartJ + m];
+                int i = zoom.startI + l;
+                int j = zoom.startJ + m;
+                if (i != j) // skipping diagonal
+                {
+                    int x = (int) (zoom.x + zoom.width - zoom.cellsSize + l * zoom.cellSize);
+                    int y = (int) (zoom.y + zoom.height - zoom.cellsSize + m * zoom.cellSize);
                     Cell cell = new Cell();
                     cell.x = x;
                     cell.y = y;
                     cell.compact = isCompact();
-                    cell.size = zoom.zoomCellSize;
-                    cell.value = value;
+                    cell.size = zoom.cellSize;
+                    cell.value = getValue(i, j);
                     paintCell(g2d, cell);
                 }
             }
@@ -265,13 +272,13 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
         // drawing zoom table
         for (int k = 0; k < zoom.zoomLength; k++) {
-            int y = (int) (zoom.zoomY + zoom.zoomHeight - k * zoom.zoomCellSize);
+            int y = (int) (zoom.y + zoom.height - k * zoom.cellSize);
             // horizontal lines
-            g2d.drawLine((int) zoom.zoomX, (int) (zoom.zoomY + y - zoom.zoomCellSize),
-                    (int) (zoom.zoomWidth + zoom.zoomX), (int) (zoom.zoomY + y - zoom.zoomCellSize));
+            g2d.drawLine((int) zoom.x, (int) (zoom.y + y - zoom.cellSize),
+                    (int) (zoom.width + zoom.x), (int) (zoom.y + y - zoom.cellSize));
             // vertical lines
-            int x = (int) (zoom.zoomX + zoom.zoomWidth - zoom.zoomCellsSize + zoom.zoomCellSize * k);
-            g2d.drawLine(x, (int) zoom.zoomY, x, (int) (zoom.zoomY + zoom.zoomHeight));
+            int x = (int) (zoom.x + zoom.width - zoom.cellsSize + zoom.cellSize * k);
+            g2d.drawLine(x, (int) zoom.y, x, (int) (zoom.y + zoom.height));
         }
 
 
@@ -279,10 +286,10 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
         for (int l = 0; l < zoom.zoomLength; l++) {
             String label = zoom.horizontalLabels.get(l);
-            g2d.drawString(label, (int) zoom.zoomX,
-                    (int) (zoom.zoomHeight - zoom.zoomCellsSize + zoom.zoomCellSize * (l + 1)));
+            g2d.drawString(label, (int) zoom.x,
+                    (int) (zoom.height - zoom.cellsSize + zoom.cellSize * (l + 1)));
             AffineTransform transform = new AffineTransform();
-            int vx = (int) (zoom.zoomX + zoom.horizontalLabelsWidth + (l + 1) * zoom.zoomCellSize);
+            int vx = (int) (zoom.x + zoom.horizontalLabelsWidth + (l + 1) * zoom.cellSize);
             int vy = (int) zoom.verticalLabelsWidth;
             transform.rotate(-Math.PI / 2, vx, vy);
             g2d.setTransform(transform);
@@ -291,7 +298,7 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         }
     }
 
-    double getLabelsWidth(List<String> labels, Graphics2D g2d) {
+    private double getLabelsWidth(List<String> labels, Graphics2D g2d) {
         return labels.stream().mapToDouble(title -> g2d.getFontMetrics().stringWidth(title)).max()
                 .orElseThrow(IllegalStateException::new);
     }
@@ -300,7 +307,6 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
     @Override
     public void mouseClicked(MouseEvent e) {
-
     }
 
     @Override
@@ -366,15 +372,7 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
     @Override
     public void mouseMoved(MouseEvent e) {
-
     }
-
-    //	@Override
-    //	public Point getToolTipLocation(MouseEvent event)
-    //	{
-    //		int x = event.getX();
-    //		int y = event.getY();
-    //	}
 
     @Override
     public String getToolTipText(MouseEvent event) {
@@ -390,30 +388,30 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
             val dataTypeJ = matrix.getDataTypes().get(cell.y);
             if (dataTypeI == CellType.NUMERIC && (dataTypeJ == CellType.NUMERIC)) {  // Numeric vs. Numeric
 
-                text += "Pearson's R\u00B2 = " + String.format("%.4f", matrix.getDataSqr()[i][j]) + "<br/>";
-                text += "Pearson's R = " + String.format("%.4f", matrix.getData()[i][j]);
+                text += "Pearson's R\u00B2 = " + formatValue(matrix.getDataSqr()[i][j]) + "<br/>";
+                text += "Pearson's R = " + formatValue(matrix.getData()[i][j]);
             } else if (dataTypeI == CellType.NOMINAL && dataTypeJ == CellType.NOMINAL) { // Nominal vs. Nominal
 
-                text += "Cramer's V = " + matrix.getDataSqr()[i][j];
+                text += "Cramer's V = " + formatValue(matrix.getDataSqr()[i][j]);
             } else { // others (assume Numeric vs. Nominal)
-                text += "ANOVA R\u00B2 = " + matrix.getDataSqr()[i][j];
+                text += "ANOVA R\u00B2 = " + formatValue(matrix.getDataSqr()[i][j]);
             }
 
             text += "</html>";
             // todo check how NaN should act
 
-//			String text = String.valueOf(detectCell(event.getX(), event.getY()).x);
-//			String column1 = matrix.getTitles().get(cell.x);
-//			String column2 = matrix.getTitles().get(cell.y);
-//			double correlation = matrix.getData()[cell.x][cell.y];
-//			double corrSqr = matrix.getDataSqr()[cell.x][cell.y];
-//
-//
-//			String html =
-//					"<html><p><font color=\"black\" " + "size=\"20\" face=\"Tahoma\">" + column1 + "<br/>" + column2
-//							+ "<br>" + (Double.isNaN(correlation) ?
-//							("Pearsons R: " + correlation + "<br/>" + "Pearsons R2: " + corrSqr) :
-//							("AVONA R2: " + corrSqr)) + "</br>" + "</font></p></html>";
+            //			String text = String.valueOf(detectCell(event.getX(), event.getY()).x);
+            //			String column1 = matrix.getTitles().get(cell.x);
+            //			String column2 = matrix.getTitles().get(cell.y);
+            //			double correlation = matrix.getData()[cell.x][cell.y];
+            //			double corrSqr = matrix.getDataSqr()[cell.x][cell.y];
+            //
+            //
+            //			String html =
+            //					"<html><p><font color=\"black\" " + "size=\"20\" face=\"Tahoma\">" + column1 + "<br/>" + column2
+            //							+ "<br>" + (Double.isNaN(correlation) ?
+            //							("Pearsons R: " + correlation + "<br/>" + "Pearsons R2: " + corrSqr) :
+            //							("AVONA R2: " + corrSqr)) + "</br>" + "</font></p></html>";
 
             return text;
         } else if (event.getX() < titlesCellWidth) {
@@ -422,6 +420,14 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         }
         {
             return super.getToolTipText(event);
+        }
+    }
+
+    private String formatValue(double value) {
+        if (Double.isNaN(value)) {
+            return "N/A";
+        } else {
+            return String.format("%.4f", value);
         }
     }
 
@@ -448,13 +454,13 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
     }
 
     private /* Nullable */ Point detectCell(int x, int y) {
-        if (titlesCellWidth > x) {
-            return null;
+        if (x > titlesCellWidth) {
+            int i = (int) ((x - titlesCellWidth) / cellSize);
+            int j = (int) (y / cellSize);
+            if (i < matrix.length() && j < matrix.length()) {
+                return new Point(i, j);
+            }
         }
-
-        int i = (int) ((x - titlesCellWidth) / cellSize);
-        int j = (int) (y / cellSize);
-
-        return new Point(i, j);
+        return null;
     }
 }

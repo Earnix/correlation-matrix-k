@@ -32,16 +32,16 @@ public class CorrelationMatrix extends JPanel {
     @Getter final List<CellType> dataTypes;
 
     @Getter @Setter
-    Color color1 = new Color(0xfa7b64);
+    Color positiveColor = new Color(0xfa7b64);
 
     @Getter @Setter
-    Color color2 = new Color(0x274184);
+    Color negativeColor = new Color(0x274184);
+
+    @Getter @Setter
+    Color highlightColor = new Color(0xB2e3d7b4, true);
 
     @Getter @Setter
     Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
-
-//    @Getter @Setter
-//    int compactSize = 500;
 
     @Getter @Setter
     int compactCellSize = 16;

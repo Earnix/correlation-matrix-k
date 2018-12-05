@@ -10,12 +10,12 @@ import java.util.List;
 public class Zoom {
     int zoomLength;
 
-    int zoomStartI;
-    int zoomStartJ;
+    int startI;
+    int startJ;
 
     double zoomSelectionSize;
 
-    double zoomCellSize; // todo expose
+    double cellSize; // todo expose
     Font font;
     List<String> horizontalLabels;
     double horizontalLabelsWidth;
@@ -23,9 +23,9 @@ public class Zoom {
     List<String> verticalLabels;
     double verticalLabelsWidth;
 
-    double zoomCellsSize;
-    double zoomWidth;
-    double zoomHeight;
-    
-    double zoomX, zoomY;
+    double cellsSize;
+    double width;
+    double height;
+
+    double x, y;
 }
