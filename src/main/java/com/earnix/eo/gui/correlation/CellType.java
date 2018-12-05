@@ -5,5 +5,5 @@ package com.earnix.eo.gui.correlation;
  * 12/5/2018
  */
 public enum CellType {
-    NUMERIC, NOMINAL, OTTHER
+    NUMERIC, NOMINAL, OTHER
 }

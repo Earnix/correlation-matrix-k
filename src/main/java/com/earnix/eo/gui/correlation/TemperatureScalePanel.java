@@ -1,14 +1,12 @@
 package com.earnix.eo.gui.correlation;
 
-import lombok.val;
-import lombok.var;
-
 import javax.swing.JPanel;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
+import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 
@@ -39,25 +37,25 @@ public class TemperatureScalePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        val g2d = (Graphics2D) g;
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
         // drawing gradient rect
-        val gradientEnd = new Point2D.Double();
+        Point2D.Double gradientEnd = new Point2D.Double();
         gradientEnd.setLocation(0, getHeight());
-        val gradientFractions = new float[]{0, 0.5f, 1};
-        val gradientColors = new Color[]{matrix.getPositiveColor(), Color.WHITE, matrix.getNegativeColor()};
-        val paint = new LinearGradientPaint(0, 0, 0, getHeight(), gradientFractions, gradientColors);
+        float[] gradientFractions = new float[]{0, 0.5f, 1};
+        Color[] gradientColors = new Color[]{matrix.getPositiveColor(), Color.WHITE, matrix.getNegativeColor()};
+        Paint paint = new LinearGradientPaint(0, 0, 0, getHeight(), gradientFractions, gradientColors);
         g2d.setPaint(paint);
         g2d.fillRect(0, 0, GRADIENT_WIDTH, getHeight());
 
         // drawing labels
         g2d.setColor(Color.black);
         g2d.setFont(matrix.getFont().deriveFont((float) FONT_SIZE));
-        var current = 1.0;
-        val step = 2 / (float) LABELS_COUNT;
-        val heightStep = getHeight() / LABELS_COUNT;
+        double current = 1.0;
+        float step = 2 / (float) LABELS_COUNT;
+        int heightStep = getHeight() / LABELS_COUNT;
         for (int i = 0; i < LABELS_COUNT; i++) {
             g2d.drawString(String.format("%.1f", current), GRADIENT_WIDTH + LABELS_MARGIN, i * heightStep);
             current -= step;

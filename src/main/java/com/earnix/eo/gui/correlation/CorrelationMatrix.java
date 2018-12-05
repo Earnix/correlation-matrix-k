@@ -1,13 +1,5 @@
 package com.earnix.eo.gui.correlation;
 
-//import com.earnix.eo.datatypes.DataType;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.FieldDefaults;
-import lombok.val;
-
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -19,34 +11,19 @@ import java.util.Objects;
  * @author Taras Maslov
  * 11/26/2018
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CorrelationMatrix extends JPanel {
 
-    @Getter final List<String> titles;
+    private final List<String> titles;
+    private final double[][] data;
+    private final double[][] dataSqr;
+    private final List<CellType> dataTypes;
 
-    @Getter final double[][] data;
-
-    @Getter final double[][] dataSqr;
-    
-    @Getter final List<CellType> dataTypes;
-
-    @Getter @Setter
-    Color positiveColor = new Color(0xfa7b64);
-
-    @Getter @Setter
-    Color negativeColor = new Color(0x274184);
-
-    @Getter @Setter
-    Color highlightColor = new Color(0xB2e3d7b4, true);
-
-    @Getter @Setter
-    Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
-
-    @Getter @Setter
-    int compactCellSize = 16;
-
-    @Getter @Setter
-    Color linesColor = new Color(0x7F000000, true);
+    private Color positiveColor = new Color(0xfa7b64);
+    private Color negativeColor = new Color(0x274184);
+    private Color highlightColor = new Color(0xB2e3d7b4, true);
+    private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
+    private int compactCellSize = 16;
+    private Color linesColor = new Color(0x7F000000, true);
     
     /**
      * @param dataTypes
@@ -64,13 +41,13 @@ public class CorrelationMatrix extends JPanel {
             throw new IllegalArgumentException();
         }
 
-        val layout = new BorderLayout();
+        BorderLayout layout = new BorderLayout();
         layout.setHgap(20);
         setLayout(layout);
-        val graph = new CorrelationMatrixGraph(this);
+        CorrelationMatrixGraph graph = new CorrelationMatrixGraph(this);
         add(graph, BorderLayout.CENTER);
 
-        val legend = new TemperatureScalePanel(this);
+        TemperatureScalePanel legend = new TemperatureScalePanel(this);
         add(legend, BorderLayout.EAST);
         
         setBackground(Color.WHITE);
@@ -78,5 +55,69 @@ public class CorrelationMatrix extends JPanel {
 
     public int length() {
         return titles.size();
+    }
+
+    public List<String> getTitles() {
+        return this.titles;
+    }
+
+    public double[][] getData() {
+        return this.data;
+    }
+
+    public double[][] getDataSqr() {
+        return this.dataSqr;
+    }
+
+    public List<CellType> getDataTypes() {
+        return this.dataTypes;
+    }
+
+    public Color getPositiveColor() {
+        return this.positiveColor;
+    }
+
+    public Color getNegativeColor() {
+        return this.negativeColor;
+    }
+
+    public Color getHighlightColor() {
+        return this.highlightColor;
+    }
+
+    public Font getLabelsFont() {
+        return this.labelsFont;
+    }
+
+    public int getCompactCellSize() {
+        return this.compactCellSize;
+    }
+
+    public Color getLinesColor() {
+        return this.linesColor;
+    }
+
+    public void setPositiveColor(Color positiveColor) {
+        this.positiveColor = positiveColor;
+    }
+
+    public void setNegativeColor(Color negativeColor) {
+        this.negativeColor = negativeColor;
+    }
+
+    public void setHighlightColor(Color highlightColor) {
+        this.highlightColor = highlightColor;
+    }
+
+    public void setLabelsFont(Font labelsFont) {
+        this.labelsFont = labelsFont;
+    }
+
+    public void setCompactCellSize(int compactCellSize) {
+        this.compactCellSize = compactCellSize;
+    }
+
+    public void setLinesColor(Color linesColor) {
+        this.linesColor = linesColor;
     }
 }

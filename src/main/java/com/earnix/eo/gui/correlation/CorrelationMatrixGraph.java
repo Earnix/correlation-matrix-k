@@ -1,10 +1,6 @@
 package com.earnix.eo.gui.correlation;
 
 
-import lombok.AccessLevel;
-import lombok.experimental.FieldDefaults;
-import lombok.val;
-
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
 import javax.swing.ToolTipManager;
@@ -28,22 +24,22 @@ import java.util.List;
  * @author Taras Maslov
  * 11/22/2018
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
+
 public class CorrelationMatrixGraph extends JPanel implements MouseListener, MouseMotionListener {
 
     private static final int ZOOM_LENGTH = 5;
     private final float CIRCLE_WIDTH = 0.8f;
     private static final double DEFAULT_SQUEEZE_COEFFICIENT = 0.8;
 
-    CorrelationMatrix matrix;
+    private CorrelationMatrix matrix;
 
-    double titlesCellWidth;
-    double cellSize;
+    private double titlesCellWidth;
+    private double cellSize;
 
-    Integer zoomJ;
-    Integer zoomI;
-    Integer highlightI = null;
-    Integer highlightJ = null;
+    private Integer zoomJ;
+    private Integer zoomI;
+    private Integer highlightI = null;
+    private Integer highlightJ = null;
 
     CorrelationMatrixGraph(CorrelationMatrix matrix) {
         this.matrix = matrix;
@@ -62,8 +58,7 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        val g2d = (Graphics2D) g;
-
+        Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
@@ -89,7 +84,7 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         for (int i = 0; i < matrix.length(); i++) {
             for (int j = 0; j < matrix.length(); j++) {
                 if (j > i || (isCompact() && j != i)) {
-                    val cell = createCell(i, j);
+                    Cell cell = createCell(i, j);
                     paintCell(g2d, cell);
                 }
             }
@@ -122,7 +117,7 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
     }
 
     private void paintHighlights(Graphics2D g2d) {
-        val highlightColor = matrix.getHighlightColor();
+        Color highlightColor = matrix.getHighlightColor();
         g2d.setColor(highlightColor);
         g2d.fillRect(0, (int) (highlightJ * cellSize), getWidth(), (int) cellSize);
         g2d.fillRect((int) (highlightI * cellSize + titlesCellWidth), 0, (int) cellSize, getHeight());
@@ -139,7 +134,7 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
     }
 
     Cell createCell(int i, int j) {
-        val cell = new Cell();
+        Cell cell = new Cell();
         cell.x = titlesCellWidth + i * cellSize;
         cell.y = j * cellSize;
         cell.value = getValue(i, j);
@@ -177,13 +172,13 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         int interpolatedRed = (int) (fillColor.getRed() * interpolation + r * (1 - interpolation));
         int interpolatedGreen = (int) (fillColor.getGreen() * interpolation + g * (1 - interpolation));
         int interpolatedBlue = (int) (fillColor.getBlue() * interpolation + b * (1 - interpolation));
-        val interpolatedColor = new Color(interpolatedRed, interpolatedGreen, interpolatedBlue);
+        Color interpolatedColor = new Color(interpolatedRed, interpolatedGreen, interpolatedBlue);
         g2d.setColor(interpolatedColor);
 
         // drawing cell
         if (!cell.compact) {
-            val currentTransform = g2d.getTransform();
-            val nextTransform = (AffineTransform) currentTransform.clone();
+            AffineTransform currentTransform = g2d.getTransform();
+            AffineTransform nextTransform = (AffineTransform) currentTransform.clone();
             nextTransform.rotate(rotation, cell.x + cellSize / 2, cell.y + radiusY / 2 + margin);
             g2d.setTransform(nextTransform);
             g2d.fillOval((int) (cell.x - radiusX / 2 + cellSize / 2), (int) (cell.y + margin), (int) radiusX,
@@ -366,11 +361,11 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
 
         if (cell != null) {
-            val i = cell.x;
-            val j = cell.y;
+            int i = cell.x;
+            int j = cell.y;
             String text = "<html>";
-            val dataTypeI = matrix.getDataTypes().get(cell.x);
-            val dataTypeJ = matrix.getDataTypes().get(cell.y);
+            CellType dataTypeI = matrix.getDataTypes().get(cell.x);
+            CellType dataTypeJ = matrix.getDataTypes().get(cell.y);
             if (dataTypeI == CellType.NUMERIC && (dataTypeJ == CellType.NUMERIC)) {  // Numeric vs. Numeric
 
                 text += "Pearson's R\u00B2 = " + formatValue(matrix.getDataSqr()[i][j]) + "<br/>";

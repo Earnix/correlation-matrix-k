@@ -7,7 +7,7 @@ import java.util.List;
  * @author Taras Maslov
  * 12/3/2018
  */
-public class Zoom {
+class Zoom {
     int length;
 
     int startI;
