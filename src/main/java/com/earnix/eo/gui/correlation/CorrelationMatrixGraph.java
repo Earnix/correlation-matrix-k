@@ -101,16 +101,17 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
             }
         }
 
-        // drawing lines
+        // drawing vertical grid lines
         g2d.setColor(matrix.getLinesColor());
-        for (int i = 0; i <= matrix.length(); i++) {
+        for (int i = 0; i <= matrix.length() - 1; i++) {
             int x = (int) (titlesCellWidth + cellSize * i);
-            g2d.drawLine(x, 0, x, (int) (cellSize * matrix.length()));
+            g2d.drawLine(x, 0, x, getHeight() - 1);
 
         }
-        for (int i = 0; i <= matrix.length(); i++) {
-            g2d.drawLine(0, (int) (i * cellSize), (int) (titlesCellWidth + cellSize * matrix.length()),
-                    (int) (i * cellSize));
+
+        // drawing horizontal grid lines
+        for (int i = 0; i <= matrix.length() - 1; i++) {
+            g2d.drawLine(0, (int) (i * cellSize), getWidth() - 1, (int) (i * cellSize));
         }
 
         // drawing titles
@@ -124,6 +125,11 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
             Zoom zoom = createZoom(g2d, zoomI, zoomJ);
             paintZoom(zoom, g2d);
         }
+
+        // border
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+        
         g2d.dispose();
     }
 
@@ -162,8 +168,8 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
         // preparing shape properties
         int margin = (int) ((cellSize - cellSize * CIRCLE_WIDTH) / 2);
-        double radiusY = cellSize - margin * 2;
-        double radiusX = (cellSize - margin * 2 /* radius margin */) * (1.0
+        double radiusY = cell.size - margin * 2;
+        double radiusX = (cell.size - margin * 2 /* radius margin */) * (1.0
                 - Math.abs(cell.value) * DEFAULT_SQUEEZE_COEFFICIENT);
         Color fillColor;
         double rotation;
@@ -190,17 +196,17 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         if (!cell.compact) {
             AffineTransform currentTransform = g2d.getTransform();
             AffineTransform nextTransform = (AffineTransform) currentTransform.clone();
-            nextTransform.rotate(rotation, cell.x + cellSize / 2, cell.y + radiusY / 2 + margin);
+            nextTransform.rotate(rotation, cell.x + cell.size / 2, cell.y + radiusY / 2 + margin);
             g2d.setTransform(nextTransform);
-            g2d.fillOval((int) (cell.x - radiusX / 2 + cellSize / 2), (int) (cell.y + margin), (int) radiusX,
+            g2d.fillOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX,
                     (int) radiusY);
             g2d.setColor(new Color(0x111111));
-            g2d.drawOval((int) (cell.x - radiusX / 2 + cellSize / 2), (int) (cell.y + margin), (int) radiusX,
+            g2d.drawOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX,
                     (int) radiusY);
             g2d.setTransform(currentTransform);
 
         } else {
-            g2d.fillRect((int) cell.x, (int) cell.y, (int) cellSize, (int) cellSize);
+            g2d.fillRect((int) cell.x, (int) cell.y, (int) cell.size, (int) cell.size);
             g2d.setColor(new Color(0x111111));
         }
     }
@@ -213,8 +219,11 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         zoom.startJ = Math.min(Math.max(j - zoom.length / 2, 0), matrix.length() - zoom.length);
 
         zoom.zoomSelectionSize = 5 * cellSize;
-        zoom.cellSize = cellSize; // todo expose
+        zoom.cellSize = (getHeight() / 2) / 2 / 5; // todo expose
         zoom.font = matrix.getFont().deriveFont((float) zoom.cellSize);
+
+        g2d.setFont(zoom.font);
+        
         zoom.horizontalLabels = matrix.getTitles().subList(zoom.startJ, zoom.startJ + zoom.length);
         zoom.horizontalLabelsWidth = getLabelsWidth(zoom.horizontalLabels, g2d);
 
@@ -443,21 +452,21 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
 
         Dimension parentSize = getParent().getSize();
-        double parentWidth = parentSize.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - 20;
-        double parentHeight = parentSize.getHeight();// - matrix.getTemperatureScalePanel().getWidth();
-        
+        double freeWidth = matrix.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - 20;
+        double freeHeight = matrix.getHeight();// - matrix.getTemperatureScalePanel().getWidth();
+
         if (cellSize == 0) {
             SwingUtilities.invokeLater(this::revalidate);
-            return new Dimension((int)parentWidth, (int)parentHeight);
+            return new Dimension((int) freeWidth, (int) freeHeight);
         }
 
         double proportion = (cellSize * matrix.length() + titlesCellWidth) / (double) (cellSize * matrix.length());
-        double parentProportion = (parentWidth) / parentHeight;
+        double parentProportion = (freeWidth) / freeHeight;
 
         if (proportion > parentProportion) {
-            return new Dimension((int) parentWidth, (int) (parentWidth / proportion));
+            return new Dimension((int) freeWidth, (int) (freeWidth / proportion));
         } else {
-            return new Dimension((int) (parentHeight* proportion), (int) parentHeight);
+            return new Dimension((int) (freeHeight * proportion), (int) freeHeight);
         }
     }
 
