@@ -21,6 +21,8 @@ import java.awt.geom.AffineTransform;
 import java.util.List;
 
 /**
+ * Correlation matrix table component.
+ * 
  * @author Taras Maslov
  * 11/22/2018
  */
@@ -58,6 +60,11 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        //debug
+        g.setColor(Color.RED);
+        g.drawLine(0, 0, getWidth(), getHeight());
+
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
@@ -425,6 +432,28 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
             }
         });
         return tooltip;
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        if (cellSize == 0) {
+            revalidate();
+            return new Dimension(100, 100);
+        }
+
+        Dimension parentSize = getParent().getSize();
+        double parentWidth = parentSize.getWidth() - matrix.getTemperatureScalePanel().getWidth();
+        double parentHeight = parentSize.getHeight();// - matrix.getTemperatureScalePanel().getWidth();
+
+
+        double proportion = (cellSize * matrix.length() + titlesCellWidth) / (double) (cellSize * matrix.length());
+        double parentProportion = (parentWidth) / parentHeight;
+
+        if (proportion > parentProportion) {
+            return new Dimension((int) parentWidth, (int) (parentWidth / proportion));
+        } else {
+            return new Dimension((int) (parentHeight* proportion), (int) parentHeight);
+        }
     }
 
     private /* Nullable */ Point detectCell(int x, int y) {

@@ -1,9 +1,10 @@
 package com.earnix.eo.gui.correlation;
 
 import javax.swing.JPanel;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,15 +25,20 @@ public class CorrelationMatrix extends JPanel {
     private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
     private int compactCellSize = 16;
     private Color linesColor = new Color(0x7F000000, true);
+
+
+    private final CorrelationMatrixGraph graph;
+    private final TemperatureScalePanel temperatureScalePanel;
     
     /**
+     * Create new correlation matrix component
      * @param dataTypes
      * @param titles
      * @param data
      * @param dataSqr
      */
     public CorrelationMatrix(List<CellType> dataTypes, List<String> titles, double[][] data, double[][] dataSqr) {
-        this.dataTypes = dataTypes;
+        this.dataTypes = Objects.requireNonNull(dataTypes);
         this.titles = Objects.requireNonNull(titles);
         this.data = Objects.requireNonNull(data);
         this.dataSqr = Objects.requireNonNull(dataSqr);
@@ -40,16 +46,16 @@ public class CorrelationMatrix extends JPanel {
         if (dataTypes.size() != titles.size() || titles.size() != data.length || data.length != dataSqr.length) {
             throw new IllegalArgumentException();
         }
-
-        BorderLayout layout = new BorderLayout();
-        layout.setHgap(20);
-        setLayout(layout);
-        CorrelationMatrixGraph graph = new CorrelationMatrixGraph(this);
-        add(graph, BorderLayout.CENTER);
-
-        TemperatureScalePanel legend = new TemperatureScalePanel(this);
-        add(legend, BorderLayout.EAST);
         
+        setLayout(new GridBagLayout());
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        graph = new CorrelationMatrixGraph(this);
+        add(graph, constraints);
+
+        temperatureScalePanel = new TemperatureScalePanel(this);
+        constraints.gridx = 1;
+        add(temperatureScalePanel, constraints);
         setBackground(Color.WHITE);
     }
 
@@ -119,5 +125,13 @@ public class CorrelationMatrix extends JPanel {
 
     public void setLinesColor(Color linesColor) {
         this.linesColor = linesColor;
+    }
+
+    public CorrelationMatrixGraph getGraph() {
+        return graph;
+    }
+
+    public TemperatureScalePanel getTemperatureScalePanel() {
+        return temperatureScalePanel;
     }
 }

@@ -26,11 +26,10 @@ public class TemperatureScalePanel extends JPanel {
 
     TemperatureScalePanel(CorrelationMatrix matrix) {
         this.matrix = matrix;
-        setPreferredSize(new Dimension(getDefinedWidth(), 0));
         setBackground(Color.WHITE);
     }
 
-    private int getDefinedWidth() {
+    int getDefinedWidth() {
         return GRADIENT_WIDTH + LABELS_WIDTH + LABELS_MARGIN * 2;
     }
 
@@ -61,5 +60,10 @@ public class TemperatureScalePanel extends JPanel {
             current -= step;
         }
 
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(getDefinedWidth(), getParent().getHeight());
     }
 }
