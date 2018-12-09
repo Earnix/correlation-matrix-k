@@ -3,6 +3,7 @@ package com.earnix.eo.gui.correlation;
 
 import javax.swing.JPanel;
 import javax.swing.JToolTip;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
 import java.awt.BasicStroke;
@@ -62,21 +63,24 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         super.paintComponent(g);
 
         //debug
-        g.setColor(Color.RED);
-        g.drawLine(0, 0, getWidth(), getHeight());
+//        g.setColor(Color.RED);
+//        g.drawLine(0, 0, getWidth(), getHeight());
+
+        boolean initialRendering = cellSize == 0;
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        cellSize = getHeight() / (double) matrix.length();
 
+        cellSize = getHeight() / (double) matrix.length();
         g2d.setFont(matrix.getFont().deriveFont((float) cellSize));
         g2d.setColor(Color.GRAY);
-
-
         titlesCellWidth = getLabelsWidth(matrix.getTitles(), g2d);
 
+        if (initialRendering) {
+            return;
+        }
 
         g2d.drawLine((int) titlesCellWidth, 0, (int) titlesCellWidth, getHeight());
 
@@ -436,15 +440,16 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
 
     @Override
     public Dimension getPreferredSize() {
-        if (cellSize == 0) {
-            revalidate();
-            return new Dimension(100, 100);
-        }
+
 
         Dimension parentSize = getParent().getSize();
-        double parentWidth = parentSize.getWidth() - matrix.getTemperatureScalePanel().getWidth();
+        double parentWidth = parentSize.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - 20;
         double parentHeight = parentSize.getHeight();// - matrix.getTemperatureScalePanel().getWidth();
-
+        
+        if (cellSize == 0) {
+            SwingUtilities.invokeLater(this::revalidate);
+            return new Dimension((int)parentWidth, (int)parentHeight);
+        }
 
         double proportion = (cellSize * matrix.length() + titlesCellWidth) / (double) (cellSize * matrix.length());
         double parentProportion = (parentWidth) / parentHeight;

@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,9 +30,10 @@ public class CorrelationMatrix extends JPanel {
 
     private final CorrelationMatrixGraph graph;
     private final TemperatureScalePanel temperatureScalePanel;
-    
+
     /**
      * Create new correlation matrix component
+     *
      * @param dataTypes
      * @param titles
      * @param data
@@ -46,15 +48,20 @@ public class CorrelationMatrix extends JPanel {
         if (dataTypes.size() != titles.size() || titles.size() != data.length || data.length != dataSqr.length) {
             throw new IllegalArgumentException();
         }
-        
+
         setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.gridx = 0;
+        constraints.weightx = 1.0;
+        constraints.anchor = GridBagConstraints.CENTER;
         graph = new CorrelationMatrixGraph(this);
         add(graph, constraints);
 
         temperatureScalePanel = new TemperatureScalePanel(this);
         constraints.gridx = 1;
+        constraints.anchor = GridBagConstraints.EAST;
+        constraints.weightx = 0;
+        constraints.insets = new Insets(0, 20, 0, 0);
         add(temperatureScalePanel, constraints);
         setBackground(Color.WHITE);
     }
