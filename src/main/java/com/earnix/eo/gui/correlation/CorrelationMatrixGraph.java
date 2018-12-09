@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Correlation matrix table component.
- * 
+ *
  * @author Taras Maslov
  * 11/22/2018
  */
@@ -79,27 +79,25 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         titlesCellWidth = getLabelsWidth(matrix.getTitles(), g2d);
 
         if (initialRendering) {
+            // will be rendered after proper preferred size calculation
             return;
         }
 
         g2d.drawLine((int) titlesCellWidth, 0, (int) titlesCellWidth, getHeight());
 
-
-        // drawing highlights
-        if (highlightJ != null) {
-            paintHighlights(g2d);
-        }
-
         // drawing cells
-        g2d.setColor(new Color(0x111111));
-        for (int i = 0; i < matrix.length(); i++) {
-            for (int j = 0; j < matrix.length(); j++) {
-                if (j > i || (isCompact() && j != i)) {
-                    Cell cell = createCell(i, j);
-                    paintCell(g2d, cell);
-                }
-            }
+
+        if (isCompact()) {
+            paintCells(g2d);
+            // drawing highlights
+            paintHighlights(g2d);
+
+        } else {
+            // drawing highlights
+            paintHighlights(g2d);
+            paintCells(g2d);
         }
+
 
         // drawing vertical grid lines
         g2d.setColor(matrix.getLinesColor());
@@ -129,15 +127,28 @@ public class CorrelationMatrixGraph extends JPanel implements MouseListener, Mou
         // border
         g2d.setStroke(new BasicStroke(2));
         g2d.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
-        
         g2d.dispose();
     }
 
+    private void paintCells(Graphics2D g2d) {
+        g2d.setColor(new Color(0x111111));
+        for (int i = 0; i < matrix.length(); i++) {
+            for (int j = 0; j < matrix.length(); j++) {
+                if (j > i || (isCompact() && j != i)) {
+                    Cell cell = createCell(i, j);
+                    paintCell(g2d, cell);
+                }
+            }
+        }
+    }
+
     private void paintHighlights(Graphics2D g2d) {
-        Color highlightColor = matrix.getHighlightColor();
-        g2d.setColor(highlightColor);
-        g2d.fillRect(0, (int) (highlightJ * cellSize), getWidth(), (int) cellSize);
-        g2d.fillRect((int) (highlightI * cellSize + titlesCellWidth), 0, (int) cellSize, getHeight());
+        if (highlightI != null) {
+            Color highlightColor = matrix.getHighlightColor();
+            g2d.setColor(highlightColor);
+            g2d.fillRect(0, (int) (highlightJ * cellSize), getWidth(), (int) cellSize);
+            g2d.fillRect((int) (highlightI * cellSize + titlesCellWidth), 0, (int) cellSize, getHeight());
+        }
     }
 
     double getValue(int i, int j) {
