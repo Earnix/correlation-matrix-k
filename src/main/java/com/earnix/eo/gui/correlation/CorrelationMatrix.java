@@ -20,25 +20,25 @@ public class CorrelationMatrix extends JPanel {
     private final double[][] dataSqr;
     private final List<CellType> dataTypes;
 
-    private float borderWidth = 2;
-    private Color borderColor = new Color(0x0);
+	private float borderWidth = 2;
+	private Color borderColor = new Color(0x0);
     private Color positiveColor = new Color(0xfa7b64);
     private Color negativeColor = new Color(0x274184);
-    private Color toolTipBackgroundColor = new Color(0xfdfdfd);
-    private float ellipseStrokeWidth = 1;
-    private Color ellipseStrokeColor = new Color(0x111111);
-    private Color toolTipBorderColor = new Color(0xc9d1d1);
-    private int toolTipBorderWidth = 1;
-    private Color toolTipTextColor = new Color(0x32383d);
-    private float zoomBorderWidth = 0.5f;
-    private Color zoomBorderColor = new Color(0x0);
-    private float zoomSelectionBorderWidth = 2f;
-    private Color zoomSelectionBorderColor = new Color(0x0);
-    private Color gridLinesColor = new Color(0x7F000000, true);
-    private float gridLinesWidth = 0.3f;
+	private Color toolTipBackgroundColor = new Color(0xfdfdfd);
+	private float ellipseStrokeWidth = 1;
+	private Color ellipseStrokeColor = new Color(0x111111);
+	private Color toolTipBorderColor = new Color(0xc9d1d1);
+	private int toolTipBorderWidth = 1;
+	private Color toolTipTextColor = new Color(0x32383d);
+	private float zoomBorderWidth = 0.5f;
+	private Color zoomBorderColor = new Color(0x0);
+	private float zoomSelectionBorderWidth = 2f;
+	private Color zoomSelectionBorderColor = new Color(0x0);
+	private Color gridLinesColor = new Color(0x7F000000, true);
+	private float gridLinesWidth = 0.3f;
     private Color highlightColor = new Color(0xB2e3d7b4, true);
     private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
-    private Color labelsColor = new Color(0x0);
+	private Color labelsColor = new Color(0x0);
     private int compactCellSize = 16;
 
     private final CorrelationMatrixGraph graph;
@@ -61,7 +61,7 @@ public class CorrelationMatrix extends JPanel {
             throw new IllegalArgumentException();
         }
 
-        setBackground(Color.WHITE);
+	    setBackground(Color.WHITE);
         setLayout(new GridBagLayout());
 
         GridBagConstraints constraints = new GridBagConstraints();
@@ -69,11 +69,11 @@ public class CorrelationMatrix extends JPanel {
         constraints.weightx = 1.0;
         constraints.anchor = GridBagConstraints.CENTER;
         graph = new CorrelationMatrixGraph(this);
-        graph.setBackground(this.getBackground());
+	    graph.setBackground(this.getBackground());
         add(graph, constraints);
 
         temperatureScalePanel = new TemperatureScalePanel(this);
-        temperatureScalePanel.setBackground(this.getBackground());
+	    temperatureScalePanel.setBackground(this.getBackground());
         constraints.gridx = 1;
         constraints.anchor = GridBagConstraints.EAST;
         constraints.weightx = 0;
@@ -122,9 +122,9 @@ public class CorrelationMatrix extends JPanel {
         return this.compactCellSize;
     }
 
-    public Color getGridLinesColor()
-    {
-        return this.gridLinesColor;
+	public Color getGridLinesColor()
+	{
+		return this.gridLinesColor;
     }
 
     public void setPositiveColor(Color positiveColor) {
@@ -147,167 +147,167 @@ public class CorrelationMatrix extends JPanel {
         this.compactCellSize = compactCellSize;
     }
 
-    public CorrelationMatrix setGridLinesColor(Color gridLinesColor)
-    {
-        this.gridLinesColor = gridLinesColor;
-        return this;
+	public CorrelationMatrix setGridLinesColor(Color gridLinesColor)
+	{
+		this.gridLinesColor = gridLinesColor;
+		return this;
+	}
+
+	public float getGridLinesWidth()
+	{
+		return gridLinesWidth;
+	}
+
+	public CorrelationMatrix setGridLinesWidth(float gridLinesWidth)
+	{
+		this.gridLinesWidth = gridLinesWidth;
+		return this;
+	}
+
+	public Color getToolTipBackgroundColor()
+	{
+		return toolTipBackgroundColor;
     }
 
-    public float getGridLinesWidth()
-    {
-        return gridLinesWidth;
-    }
+	public CorrelationMatrix setToolTipBackgroundColor(Color toolTipBackgroundColor)
+	{
+		this.toolTipBackgroundColor = toolTipBackgroundColor;
+		return this;
+	}
 
-    public CorrelationMatrix setGridLinesWidth(float gridLinesWidth)
-    {
-        this.gridLinesWidth = gridLinesWidth;
-        return this;
-    }
+	public float getEllipseStrokeWidth()
+	{
+		return ellipseStrokeWidth;
+	}
 
-    public Color getToolTipBackgroundColor()
-    {
-        return toolTipBackgroundColor;
-    }
+	public CorrelationMatrix setEllipseStrokeWidth(float ellipseStrokeWidth)
+	{
+		this.ellipseStrokeWidth = ellipseStrokeWidth;
+		return this;
+	}
 
-    public CorrelationMatrix setToolTipBackgroundColor(Color toolTipBackgroundColor)
-    {
-        this.toolTipBackgroundColor = toolTipBackgroundColor;
-        return this;
-    }
+	public Color getEllipseStrokeColor()
+	{
+		return ellipseStrokeColor;
+	}
 
-    public float getEllipseStrokeWidth()
-    {
-        return ellipseStrokeWidth;
-    }
+	public CorrelationMatrix setEllipseStrokeColor(Color ellipseStrokeColor)
+	{
+		this.ellipseStrokeColor = ellipseStrokeColor;
+		return this;
+	}
 
-    public CorrelationMatrix setEllipseStrokeWidth(float ellipseStrokeWidth)
-    {
-        this.ellipseStrokeWidth = ellipseStrokeWidth;
-        return this;
-    }
+	public Color getToolTipBorderColor()
+	{
+		return toolTipBorderColor;
+	}
 
-    public Color getEllipseStrokeColor()
-    {
-        return ellipseStrokeColor;
-    }
+	public CorrelationMatrix setToolTipBorderColor(Color toolTipBorderColor)
+	{
+		this.toolTipBorderColor = toolTipBorderColor;
+		return this;
+	}
 
-    public CorrelationMatrix setEllipseStrokeColor(Color ellipseStrokeColor)
-    {
-        this.ellipseStrokeColor = ellipseStrokeColor;
-        return this;
-    }
+	public int getToolTipBorderWidth()
+	{
+		return toolTipBorderWidth;
+	}
 
-    public Color getToolTipBorderColor()
-    {
-        return toolTipBorderColor;
-    }
+	public CorrelationMatrix setToolTipBorderWidth(int toolTipBorderWidth)
+	{
+		this.toolTipBorderWidth = toolTipBorderWidth;
+		return this;
+	}
 
-    public CorrelationMatrix setToolTipBorderColor(Color toolTipBorderColor)
-    {
-        this.toolTipBorderColor = toolTipBorderColor;
-        return this;
-    }
+	public Color getToolTipTextColor()
+	{
+		return toolTipTextColor;
+	}
 
-    public int getToolTipBorderWidth()
-    {
-        return toolTipBorderWidth;
-    }
+	public CorrelationMatrix setToolTipTextColor(Color toolTipTextColor)
+	{
+		this.toolTipTextColor = toolTipTextColor;
+		return this;
+	}
 
-    public CorrelationMatrix setToolTipBorderWidth(int toolTipBorderWidth)
-    {
-        this.toolTipBorderWidth = toolTipBorderWidth;
-        return this;
-    }
+	public float getZoomBorderWidth()
+	{
+		return zoomBorderWidth;
+	}
 
-    public Color getToolTipTextColor()
-    {
-        return toolTipTextColor;
-    }
+	public CorrelationMatrix setZoomBorderWidth(float zoomBorderWidth)
+	{
+		this.zoomBorderWidth = zoomBorderWidth;
+		return this;
+	}
 
-    public CorrelationMatrix setToolTipTextColor(Color toolTipTextColor)
-    {
-        this.toolTipTextColor = toolTipTextColor;
-        return this;
-    }
+	public Color getZoomBorderColor()
+	{
+		return zoomBorderColor;
+	}
 
-    public float getZoomBorderWidth()
-    {
-        return zoomBorderWidth;
-    }
+	public CorrelationMatrix setZoomBorderColor(Color zoomBorderColor)
+	{
+		this.zoomBorderColor = zoomBorderColor;
+		return this;
+	}
 
-    public CorrelationMatrix setZoomBorderWidth(float zoomBorderWidth)
-    {
-        this.zoomBorderWidth = zoomBorderWidth;
-        return this;
-    }
+	public float getZoomSelectionBorderWidth()
+	{
+		return zoomSelectionBorderWidth;
+	}
 
-    public Color getZoomBorderColor()
-    {
-        return zoomBorderColor;
-    }
+	public CorrelationMatrix setZoomSelectionBorderWidth(float zoomSelectionBorderWidth)
+	{
+		this.zoomSelectionBorderWidth = zoomSelectionBorderWidth;
+		return this;
+	}
 
-    public CorrelationMatrix setZoomBorderColor(Color zoomBorderColor)
-    {
-        this.zoomBorderColor = zoomBorderColor;
-        return this;
-    }
+	public Color getZoomSelectionBorderColor()
+	{
+		return zoomSelectionBorderColor;
+	}
 
-    public float getZoomSelectionBorderWidth()
-    {
-        return zoomSelectionBorderWidth;
-    }
+	public CorrelationMatrix setZoomSelectionBorderColor(Color zoomSelectionBorderColor)
+	{
+		this.zoomSelectionBorderColor = zoomSelectionBorderColor;
+		return this;
+	}
 
-    public CorrelationMatrix setZoomSelectionBorderWidth(float zoomSelectionBorderWidth)
-    {
-        this.zoomSelectionBorderWidth = zoomSelectionBorderWidth;
-        return this;
-    }
+	public float getBorderWidth()
+	{
+		return borderWidth;
+	}
 
-    public Color getZoomSelectionBorderColor()
-    {
-        return zoomSelectionBorderColor;
-    }
+	public CorrelationMatrix setBorderWidth(float borderWidth)
+	{
+		this.borderWidth = borderWidth;
+		return this;
+	}
 
-    public CorrelationMatrix setZoomSelectionBorderColor(Color zoomSelectionBorderColor)
-    {
-        this.zoomSelectionBorderColor = zoomSelectionBorderColor;
-        return this;
-    }
+	public Color getBorderColor()
+	{
+		return borderColor;
+	}
 
-    public float getBorderWidth()
-    {
-        return borderWidth;
-    }
+	public CorrelationMatrix setBorderColor(Color borderColor)
+	{
+		this.borderColor = borderColor;
+		return this;
+	}
 
-    public CorrelationMatrix setBorderWidth(float borderWidth)
-    {
-        this.borderWidth = borderWidth;
-        return this;
-    }
+	public Color getLabelsColor()
+	{
+		return labelsColor;
+	}
 
-    public Color getBorderColor()
-    {
-        return borderColor;
-    }
+	public CorrelationMatrix setLabelsColor(Color labelsColor)
+	{
+		this.labelsColor = labelsColor;
+		return this;
+	}
 
-    public CorrelationMatrix setBorderColor(Color borderColor)
-    {
-        this.borderColor = borderColor;
-        return this;
-    }
-
-    public Color getLabelsColor()
-    {
-        return labelsColor;
-    }
-
-    public CorrelationMatrix setLabelsColor(Color labelsColor)
-    {
-        this.labelsColor = labelsColor;
-        return this;
-    }
-
-    // 
+	// 
 
     public CorrelationMatrixGraph getGraph() {
         return graph;
