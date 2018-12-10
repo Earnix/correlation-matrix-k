@@ -5,12 +5,10 @@ import java.awt.*;
 import java.awt.geom.Point2D;
 
 /**
- * @author Taras Maslov
- * 11/26/2018
+ * Informative temperature scale panel. Provides visual understanding of correlation by color.
  */
 public class TemperatureScalePanel extends JPanel
 {
-
 	private static final int GRADIENT_WIDTH = 20;
 	private static final int LABELS_COUNT = 10;
 	private static final int LABELS_WIDTH = 20;

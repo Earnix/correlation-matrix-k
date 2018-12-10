@@ -3,15 +3,13 @@ package com.earnix.eo.gui.correlation;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-
 /**
  * @author Taras Maslov
  * 12/5/2018
  */
 class CorrelationMatrixGraphTest {
 
-    static CorrelationMatrixGraph graph;
+    static CorrelationMatrixGrid graph;
 
     @BeforeAll
     static void before() {

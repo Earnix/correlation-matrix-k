@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @author Taras Maslov
- * 11/26/2018
+ * Main correlation matrix component which consist of proportionally resizing correlation matrix and temperature scale pane.
+ * Provides presentation customization settings
  */
 public class CorrelationMatrix extends JPanel
 {
@@ -15,7 +15,7 @@ public class CorrelationMatrix extends JPanel
 	private final List<String> titles;
 	private final double[][] data;
 	private final double[][] dataSqr;
-	private final List<CellType> dataTypes;
+	private final List<DataType> dataTypes;
 
 	private float borderWidth = 2;
 	private Color borderColor = new Color(0x0);
@@ -37,19 +37,20 @@ public class CorrelationMatrix extends JPanel
 	private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
 	private Color labelsColor = new Color(0x0);
 	private int compactCellSize = 16;
+	private int gridMargin = 20;
 
-	private final CorrelationMatrixGraph graph;
+	private final CorrelationMatrixGrid graph;
 	private final TemperatureScalePanel temperatureScalePanel;
 
 	/**
-	 * Create new correlation matrix component
+	 * Creates Main correlation matrix component
 	 *
 	 * @param dataTypes
-	 * @param titles
-	 * @param data
-	 * @param dataSqr
+	 * @param titles data columns titles to display
+	 * @param data two-dimensional array with correlation values. {@code NaN} means absence of correlation.
+	 * @param dataSqr two-dimensional array with square correlation values. {@code NaN} means absence of correlation.
 	 */
-	public CorrelationMatrix(List<CellType> dataTypes, List<String> titles, double[][] data, double[][] dataSqr)
+	public CorrelationMatrix(List<DataType> dataTypes, List<String> titles, double[][] data, double[][] dataSqr)
 	{
 		this.dataTypes = Objects.requireNonNull(dataTypes);
 		this.titles = Objects.requireNonNull(titles);
@@ -66,8 +67,9 @@ public class CorrelationMatrix extends JPanel
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
 		constraints.weightx = 1.0;
+		constraints.insets = new Insets(gridMargin, gridMargin, gridMargin, gridMargin);
 		constraints.anchor = GridBagConstraints.CENTER;
-		graph = new CorrelationMatrixGraph(this);
+		graph = new CorrelationMatrixGrid(this);
 		graph.setBackground(this.getBackground());
 		add(graph, constraints);
 
@@ -76,7 +78,7 @@ public class CorrelationMatrix extends JPanel
 		constraints.gridx = 1;
 		constraints.anchor = GridBagConstraints.EAST;
 		constraints.weightx = 0;
-		constraints.insets = new Insets(0, 20, 0, 0);
+		constraints.insets = new Insets(0, 0, 0, 0);
 		add(temperatureScalePanel, constraints);
 		setBackground(Color.WHITE);
 	}
@@ -101,7 +103,7 @@ public class CorrelationMatrix extends JPanel
 		return this.dataSqr;
 	}
 
-	public List<CellType> getDataTypes()
+	public List<DataType> getDataTypes()
 	{
 		return this.dataTypes;
 	}
@@ -321,9 +323,20 @@ public class CorrelationMatrix extends JPanel
 		return this;
 	}
 
+	public int getGridMargin()
+	{
+		return gridMargin;
+	}
+
+	public CorrelationMatrix setGridMargin(int gridMargin)
+	{
+		this.gridMargin = gridMargin;
+		return this;
+	}
+
 	// 
 
-	public CorrelationMatrixGraph getGraph()
+	public CorrelationMatrixGrid getGraph()
 	{
 		return graph;
 	}
