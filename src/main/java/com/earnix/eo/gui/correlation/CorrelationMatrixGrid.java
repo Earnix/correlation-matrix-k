@@ -32,6 +32,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	private Integer zoomI;
 	private Integer highlightI;
 	private Integer highlightJ;
+	private Font labelsFont;
 
 	/**
 	 * Creates new grid component.
@@ -53,15 +54,13 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	@Override
 	protected void paintComponent(Graphics g)
 	{
-		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		double labelMargin = (1 - LABEL_HEIGHT_PROPORTION) * cellSize / 2;
+		super.paintComponent(g);
 
-		double fontSize = cellSize * LABEL_HEIGHT_PROPORTION;
-		Font font = matrix.getFont().deriveFont((float) fontSize);
-		g2d.setFont(font);
+		double labelMargin = (1 - LABEL_HEIGHT_PROPORTION) * cellSize / 2;
+		g2d.setFont(labelsFont);
 
 		// Drawing cells and highlights. 
 		// In case of compact mode - highlights are drawn over cells since sells are 
@@ -96,7 +95,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.setColor(matrix.getLabelsColor());
 		for (int i = 0; i < matrix.length(); i++)
 		{
-			g2d.drawString(matrix.getTitles().get(i), (int) labelMargin, (int) ((i + 1) * cellSize - labelMargin));
+			g2d.drawString(abbreviate(matrix.getTitles().get(i)), (int) labelMargin,
+					(int) ((i + 1) * cellSize - labelMargin));
 		}
 
 		// drawing zoom
@@ -267,7 +267,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.setFont(zoom.font);
 		g2d.clearRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
 		g2d.drawRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
-		
+
 		// drawing cells in zoom area
 		for (int l = 0; l < zoom.length; l++)
 		{
@@ -324,7 +324,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 	private double getLabelsWidth(List<String> labels, Font font)
 	{
-		return labels.stream().mapToDouble(title -> getFontMetrics(font).stringWidth(title)).max()
+		return labels.stream().mapToDouble(title -> getFontMetrics(font).stringWidth(abbreviate(title))).max()
 				.orElseThrow(IllegalStateException::new);
 	}
 
@@ -492,12 +492,13 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		});
 		return tooltip;
 	}
-	
+
 	@Override
 	public Dimension getPreferredSize()
 	{
 
-		double freeWidth = matrix.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - matrix.getGridMargin() * 2;
+		double freeWidth =
+				matrix.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - matrix.getGridMargin() * 2;
 		double freeHeight = matrix.getHeight() - matrix.getGridMargin() * 2;
 		boolean horizontalFit;
 		float fontHeight = (float) (freeHeight / matrix.length());
@@ -536,18 +537,29 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			//
 			// as result:
 			//
-			// title cell height = width / (length + fontProportion)
+			// title cell height = width / (length + title cell proportion)
 
 			cellSize = freeWidth / (matrix.length() + cellProportion);
-			double height = matrix.length() * cellSize;
-			return new Dimension((int) freeWidth, (int) height);
 		}
 		else
 		{
-			// height is known
 			cellSize = freeHeight / matrix.length();
-			double width = freeHeight + (cellProportion * cellSize);
-			return new Dimension((int) width, (int) freeHeight);
+		}
+		labelsFont = matrix.getFont().deriveFont((float) cellSize * LABEL_HEIGHT_PROPORTION);
+
+		// correcting cell size if label is too long because not proportional font scaling
+		double labelWidth = getLabelsWidth(matrix.getTitles(), labelsFont);
+		double error = freeWidth - cellSize * matrix.length() - labelWidth - (cellSize * (1 - LABEL_HEIGHT_PROPORTION));
+		cellSize = Math.min(cellSize + error / matrix.length(), freeHeight / matrix.length());
+		if (horizontalFit)
+		{
+
+			return new Dimension((int) freeWidth, (int) (matrix.length() * cellSize));
+		}
+		else
+		{
+			return new Dimension((int) (freeHeight + labelWidth + cellSize * (1 - LABEL_HEIGHT_PROPORTION)),
+					(int) freeHeight);
 		}
 	}
 
@@ -564,5 +576,17 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			}
 		}
 		return null;
+	}
+
+	private String abbreviate(String title)
+	{
+		if (title.length() > LABEL_ABBREVIATION_LENGTH)
+		{
+			return title.substring(0, LABEL_ABBREVIATION_LENGTH - 3) + "...";
+		}
+		else
+		{
+			return title;
+		}
 	}
 }
