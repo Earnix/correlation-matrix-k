@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/Earnix/correlation-matrix-k.svg?branch=master)](https://travis-ci.org/Earnix/correlation-matrix-k)
 # Correlation-Matrix-K
 
 Library provides correlation matrix UI component for Swing. As input, it receives 2-dimensional array data with correlation cofficients.
@@ -10,16 +11,16 @@ A correlation matrix is a table showing correlation coefficients between variabl
 * `Java SE 8` or later
 * `Maven` or `Gradle` dependency management
 
-### Usage
-
+### Installation
+Add `Maven` or `Gradle` dependency to your project:
 ```
 <dependency>
 	<groupId>com.earnix.eo.gui</groupId>
 	<artifactId>correlation-matrix-k</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 </dependency>
 ```
-
+``` implementation 'com.earnix.eo.gui:correlation-matrix-k:1.0'```
 
 ## Built With
 
@@ -33,10 +34,9 @@ A correlation matrix is a table showing correlation coefficients between variabl
 
 * **Taras Maslov** - *Initial work* - [linight](https://github.com/linight)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
-
 ## License
 
+See [LICENSE.MD](/LICENSE.md)
 
 ## Acknowledgments
 
