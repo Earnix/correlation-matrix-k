@@ -48,7 +48,7 @@ public class CorrelationMatrix extends JPanel
 	 */
 	private Color highlightColor = new Color(0xB2e3d7b4, true);
 	private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
-	private Color labelsColor = new Color(0x0);
+	private Color labelsColor = Color.white;//new Color(0x0);
 	private int compactCellSize = 16;
 	private int gridMargin = 20;
 
@@ -77,7 +77,7 @@ public class CorrelationMatrix extends JPanel
 			throw new IllegalArgumentException();
 		}
 
-		setBackground(Color.WHITE);
+		setBackground(Color.RED);
 		setLayout(new GridBagLayout());
 
 		GridBagConstraints constraints = new GridBagConstraints();
@@ -373,7 +373,7 @@ public class CorrelationMatrix extends JPanel
 
 	// 
 
-	public CorrelationMatrixGrid getGraph()
+	public CorrelationMatrixGrid getGrid()
 	{
 		return graph;
 	}

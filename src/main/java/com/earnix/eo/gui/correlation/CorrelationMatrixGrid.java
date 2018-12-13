@@ -188,7 +188,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param j column index 
 	 * @return cell model
 	 */
-	private Cell createCell(int i, int j)
+	Cell createCell(int i, int j)
 	{
 		Cell cell = new Cell();
 		cell.x = getWidth() - (matrix.length() - i) * cellSize;

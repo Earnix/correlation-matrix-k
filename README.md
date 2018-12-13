@@ -26,24 +26,23 @@ Then integrate it into your code:
 
 ```java
 JFrame frame = new JFrame();
-		frame.setSize(800, 800);
-		frame.setResizable(true);
-		frame.setLocationByPlatform(true);
-		
-		double [][] correlations = //
-		double[][] correlationsSqr = //
-		List<RowType> rowsTypes = //
-		List<String> rowsTitles = //
+frame.setSize(800, 800);
+frame.setResizable(true);
+frame.setLocationByPlatform(true);
 
-		CorrelationMatrix matrix = new CorrelationMatrix(rowsTypes, rowsTitles, correlations, correlationsSqr);
-		
-		frame.getContentPane().add(matrix);
-		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		frame.setVisible(true);
+double [][] correlations = //
+double[][] correlationsSqr = //
+List<RowType> rowsTypes = //
+List<String> rowsTitles = //
+
+CorrelationMatrix matrix = new CorrelationMatrix(rowsTypes, rowsTitles, correlations, correlationsSqr);
+frame.getContentPane().add(matrix);
+frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+frame.setVisible(true);
 ```
 
 
-See [example code]
+See [example code](/src/main/java/com/earnix/eo/gui/correlation/Example.java)
 
 
 ## Built With
