@@ -4,8 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * @author Taras Maslov
- * 12/10/2018
+ * Custom tooltip used in matrix grid component. 
+ * Purpose: to enable anti-aliasing.
+ * <br/>
+ * {@see com.earnix.eo.gui.correlation.CorrelationMatrixGrid#createToolTip()}
  */
 public class CorrelationToolTip extends JToolTip
 {

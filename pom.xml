@@ -8,7 +8,7 @@
     <artifactId>correlation-matrix-k</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>Swing correlation matrix component</name>
+    <name>Swing Correlation Matrix Component</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

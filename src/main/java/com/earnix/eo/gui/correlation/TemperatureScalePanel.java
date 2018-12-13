@@ -21,6 +21,7 @@ public class TemperatureScalePanel extends JPanel
 	{
 		this.matrix = matrix;
 		setBackground(Color.WHITE);
+		setOpaque(false);
 	}
 
 	int getDefinedWidth()
@@ -31,11 +32,11 @@ public class TemperatureScalePanel extends JPanel
 	@Override
 	protected void paintComponent(Graphics g)
 	{
-		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
+		super.paintComponent(g);
+		
 		// drawing gradient rect
 		Point2D.Double gradientEnd = new Point2D.Double();
 		gradientEnd.setLocation(0, getHeight());
@@ -51,6 +52,7 @@ public class TemperatureScalePanel extends JPanel
 		double current = 1.0;
 		float step = 2 / (float) LABELS_COUNT;
 		int heightStep = getHeight() / LABELS_COUNT;
+		g2d.setColor(matrix.getLabelsColor());
 		for (int i = 0; i < LABELS_COUNT; i++)
 		{
 			g2d.drawString(String.format("%.1f", current), GRADIENT_WIDTH + LABELS_MARGIN, i * heightStep);

@@ -4,12 +4,11 @@ import java.awt.*;
 import java.util.List;
 
 /**
- * @author Taras Maslov
- * 12/3/2018
+ * Represents correlation matrix zoom model with pre-calculated rendering properties like coordinates and sizes.
  */
 class Zoom
 {
-	public double labelsMargin;
+	double labelsMargin;
 	int length;
 
 	int startI;

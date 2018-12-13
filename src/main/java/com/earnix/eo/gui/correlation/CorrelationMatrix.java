@@ -6,16 +6,23 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Main correlation matrix component which consist of proportionally resizing correlation matrix and temperature scale pane.
- * Provides presentation customization settings
+ * Correlation matrix component which consist of proportionally resizing correlation matrix and temperature scale pane.
+ * Provides presentation customization settings. Does not provide calculation of correlations. 
+ * Correlations should be calculated with following methods depending on data types:
+ * <br/>
+ * Numeric with numeric - <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson correlation coefficient</a>;
+ * <br/>
+ * Nominal with nominal - <a href="http://google.com">Cramér's V</a>;
+ * <br/>
+ * Numeric with nominal - <a href="https://researchbasics.education.uconn.edu/anova_regression_and_chi-square/">ANOVA (ANalysis Of VAriance)</a>;
  */
 public class CorrelationMatrix extends JPanel
 {
 
 	private final List<String> titles;
-	private final double[][] data;
-	private final double[][] dataSqr;
-	private final List<DataType> dataTypes;
+	private final double[][] correlations;
+	private final double[][] correlationsSqr;
+	private final List<RowType> dataTypes;
 
 	private float borderWidth = 2;
 	private Color borderColor = new Color(0x0);
@@ -33,7 +40,9 @@ public class CorrelationMatrix extends JPanel
 	private Color zoomSelectionBorderColor = new Color(0x0);
 	private Color gridLinesColor = new Color(0x7F000000, true);
 	private float gridLinesWidth = 0.3f;
-	
+	private float tooltipFontSize = 20f;
+	private int tooltipPadding = 20;
+
 	/**
 	 * Color to use for highlight lines. Should be partially transparent to since completely covers data cells in compact mode.
 	 */
@@ -49,18 +58,21 @@ public class CorrelationMatrix extends JPanel
 	/**
 	 * Creates Main correlation matrix component
 	 *
-	 * @param dataTypes
-	 * @param titles data columns titles to display
-	 * @param data two-dimensional array with correlation values. {@code NaN} means absence of correlation.
-	 * @param dataSqr two-dimensional array with square correlation values. {@code NaN} means absence of correlation.
+	 * @param dataTypes types of data rows. {@see com.earnix.eo.gui.correlation.DataType}
+	 * @param titles data rows titles to display
+	 * @param correlations two-dimensional array with correlation values. {@code NaN} means absence of correlation.
+	 * @param correlationsSqr two-dimensional array with square correlation values. {@code NaN} means absence of correlation.
 	 */
-	public CorrelationMatrix(List<DataType> dataTypes, List<String> titles, double[][] data, double[][] dataSqr)
+	public CorrelationMatrix(List<RowType> dataTypes, List<String> titles, double[][] correlations,
+			double[][] correlationsSqr)
 	{
+		// setting initial data
 		this.dataTypes = Objects.requireNonNull(dataTypes);
 		this.titles = Objects.requireNonNull(titles);
-		this.data = Objects.requireNonNull(data);
-		this.dataSqr = Objects.requireNonNull(dataSqr);
-		if (dataTypes.size() != titles.size() || titles.size() != data.length || data.length != dataSqr.length)
+		this.correlations = Objects.requireNonNull(correlations);
+		this.correlationsSqr = Objects.requireNonNull(correlationsSqr);
+		if (dataTypes.size() != titles.size() || titles.size() != correlations.length
+				|| correlations.length != correlationsSqr.length)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -84,7 +96,6 @@ public class CorrelationMatrix extends JPanel
 		constraints.weightx = 0;
 		constraints.insets = new Insets(0, 0, 0, 0);
 		add(temperatureScalePanel, constraints);
-		setBackground(Color.WHITE);
 	}
 
 	public int length()
@@ -97,17 +108,17 @@ public class CorrelationMatrix extends JPanel
 		return this.titles;
 	}
 
-	public double[][] getData()
+	public double[][] getCorrelations()
 	{
-		return this.data;
+		return this.correlations;
 	}
 
-	public double[][] getDataSqr()
+	public double[][] getCorrelationsSqr()
 	{
-		return this.dataSqr;
+		return this.correlationsSqr;
 	}
 
-	public List<DataType> getDataTypes()
+	public List<RowType> getDataTypes()
 	{
 		return this.dataTypes;
 	}
@@ -335,6 +346,28 @@ public class CorrelationMatrix extends JPanel
 	public CorrelationMatrix setGridMargin(int gridMargin)
 	{
 		this.gridMargin = gridMargin;
+		return this;
+	}
+
+	public float getTooltipFontSize()
+	{
+		return tooltipFontSize;
+	}
+
+	public CorrelationMatrix setTooltipFontSize(float tooltipFontSize)
+	{
+		this.tooltipFontSize = tooltipFontSize;
+		return this;
+	}
+
+	public int getTooltipPadding()
+	{
+		return tooltipPadding;
+	}
+
+	public CorrelationMatrix setTooltipPadding(int tooltipPadding)
+	{
+		this.tooltipPadding = tooltipPadding;
 		return this;
 	}
 

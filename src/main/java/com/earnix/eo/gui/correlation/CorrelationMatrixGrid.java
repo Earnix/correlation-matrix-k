@@ -4,7 +4,9 @@ package com.earnix.eo.gui.correlation;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.util.List;
 import java.util.Optional;
@@ -70,7 +72,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		this.matrix = matrix;
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		setOpaque(true);
+		setOpaque(false);
 		ToolTipManager.sharedInstance().registerComponent(this);
 	}
 
@@ -169,13 +171,13 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	private double getValue(int i, int j)
 	{
 		double value;
-		if (matrix.getData()[i][j] < 0)
+		if (matrix.getCorrelations()[i][j] < 0)
 		{
-			value = -matrix.getDataSqr()[i][j];
+			value = -matrix.getCorrelationsSqr()[i][j];
 		}
 		else
 		{
-			value = matrix.getDataSqr()[i][j];
+			value = matrix.getCorrelationsSqr()[i][j];
 		}
 		return value;
 	}
@@ -253,7 +255,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// interpolating fill color between main (positive or negative) and white
 		double interpolation = Math.abs(cell.value);
 
-		g2d.setColor(interpolate(fillColor, Color.WHITE, interpolation));
+		g2d.setColor(interpolate(fillColor, matrix.getBackground(), interpolation));
 
 		// drawing cell
 		if (!cell.compact)
@@ -335,6 +337,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// drawing zoom area
 		g2d.setStroke(new BasicStroke(matrix.getZoomBorderWidth()));
 		g2d.setColor(matrix.getZoomBorderColor());
+		g2d.setBackground(matrix.getBackground());
 		g2d.setFont(zoom.font);
 		g2d.clearRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
 		g2d.drawRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
@@ -506,23 +509,23 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 			// creating HTML text displaying coordinates
 			String text = "<html>";
-			DataType dataTypeI = matrix.getDataTypes().get(i);
-			DataType dataTypeJ = matrix.getDataTypes().get(j);
+			RowType dataTypeI = matrix.getDataTypes().get(i);
+			RowType dataTypeJ = matrix.getDataTypes().get(j);
 			text += matrix.getTitles().get(i) + "<br/>";
 			text += matrix.getTitles().get(j) + "<br/>";
-			if (dataTypeI == DataType.NUMERIC && (dataTypeJ == DataType.NUMERIC))
+			if (dataTypeI == RowType.NUMERIC && (dataTypeJ == RowType.NUMERIC))
 			{  // Numeric vs. Numeric
-				text += "Pearson's R\u00B2 = " + formatCorrelationValue(matrix.getDataSqr()[i][j]) + "<br/>";
-				text += "Pearson's R = " + formatCorrelationValue(matrix.getData()[i][j]);
+				text += "Pearson's R\u00B2 = " + formatCorrelationValue(matrix.getCorrelationsSqr()[i][j]) + "<br/>";
+				text += "Pearson's R = " + formatCorrelationValue(matrix.getCorrelations()[i][j]);
 			}
-			else if (dataTypeI == DataType.NOMINAL && dataTypeJ == DataType.NOMINAL)
+			else if (dataTypeI == RowType.NOMINAL && dataTypeJ == RowType.NOMINAL)
 			{ // Nominal vs. Nominal
 
-				text += "Cramer's V = " + formatCorrelationValue(matrix.getDataSqr()[i][j]);
+				text += "Cramer's V = " + formatCorrelationValue(matrix.getCorrelationsSqr()[i][j]);
 			}
 			else
 			{ // others (assume Numeric vs. Nominal)
-				text += "ANOVA R\u00B2 = " + formatCorrelationValue(matrix.getDataSqr()[i][j]);
+				text += "ANOVA R\u00B2 = " + formatCorrelationValue(matrix.getCorrelationsSqr()[i][j]);
 			}
 			text += "</html>";
 			return text;
@@ -530,7 +533,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		else if (event.getX() < (getWidth() - cellSize * matrix.length()))
 		{
 			int i = (int) (event.getY() / cellSize);
-			return "<html><p><font size =\"50\" color=\"black\">" + matrix.getTitles().get(i) + "</font></p></html>";
+			return "<html><p>" + matrix.getTitles().get(i) + "</p></html>";
 		}
 		{
 			return super.getToolTipText(event);
@@ -546,22 +549,14 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	public JToolTip createToolTip()
 	{
 		JToolTip tooltip = new CorrelationToolTip();
-		tooltip.setFont(matrix.getFont().deriveFont(20f));
+		tooltip.setFont(matrix.getFont().deriveFont(matrix.getTooltipFontSize()));
 		tooltip.setForeground(matrix.getToolTipTextColor());
 		tooltip.setBackground(matrix.getToolTipBackgroundColor());
+		int padding = matrix.getTooltipPadding();
 		CompoundBorder border = new CompoundBorder(
 				BorderFactory.createLineBorder(matrix.getToolTipBorderColor(), matrix.getToolTipBorderWidth()),
-				BorderFactory.createEmptyBorder(20, 20, 20, 20));
+				BorderFactory.createEmptyBorder(padding, padding, padding, padding));
 		tooltip.setBorder(border);
-		tooltip.addComponentListener(new ComponentAdapter()
-		{
-
-			@Override
-			public void componentHidden(ComponentEvent e)
-			{
-				CorrelationMatrixGrid.this.repaint();
-			}
-		});
 		return tooltip;
 	}
 
@@ -678,7 +673,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	}
 
 	/**
-	 * Creates string for double data value, keeping 4 decimal placec.
+	 * Creates string for double data value, keeping 4 decimal places.
 	 * In case of {@link Double#NaN}, returns "N/A".
 	 *
 	 * @param value value to format
@@ -727,9 +722,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 */
 	private static Color interpolate(Color color1, Color color2, double interpolation)
 	{
-		int interpolatedRed = (int) (color1.getRed() * interpolation + color2.getRed() * (1 - interpolation));
-		int interpolatedGreen = (int) (color1.getGreen() * interpolation + color2.getGreen() * (1 - interpolation));
-		int interpolatedBlue = (int) (color1.getBlue() * interpolation + color2.getBlue() * (1 - interpolation));
-		return new Color(interpolatedRed, interpolatedGreen, interpolatedBlue);
+		int red = (int) (color1.getRed() * interpolation + color2.getRed() * (1 - interpolation));
+		int green = (int) (color1.getGreen() * interpolation + color2.getGreen() * (1 - interpolation));
+		int blue = (int) (color1.getBlue() * interpolation + color2.getBlue() * (1 - interpolation));
+		return new Color(red, green, blue);
 	}
 }
