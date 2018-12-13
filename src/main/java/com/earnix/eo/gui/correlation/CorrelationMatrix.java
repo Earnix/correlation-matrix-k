@@ -33,6 +33,10 @@ public class CorrelationMatrix extends JPanel
 	private Color zoomSelectionBorderColor = new Color(0x0);
 	private Color gridLinesColor = new Color(0x7F000000, true);
 	private float gridLinesWidth = 0.3f;
+	
+	/**
+	 * Color to use for highlight lines. Should be partially transparent to since completely covers data cells in compact mode.
+	 */
 	private Color highlightColor = new Color(0xB2e3d7b4, true);
 	private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
 	private Color labelsColor = new Color(0x0);

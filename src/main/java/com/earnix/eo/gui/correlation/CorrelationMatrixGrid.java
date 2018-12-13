@@ -11,7 +11,9 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Correlation matrix table component.
+ * Correlation matrix table componentm which includes data cells, titles column, highlights (if active) and zoom (if active).
+ * Component is supposed to keep its proportion with {@link #getPreferredSize()} and is assumed to be used only within (@link {@link CorrelationMatrix}) as parent.
+ * Presentation parameters are stored in {@link CorrelationMatrix}
  *
  * @author Taras Maslov
  * 11/22/2018
@@ -19,23 +21,47 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CorrelationMatrixGrid extends JPanel implements MouseListener, MouseMotionListener
 {
-
+	/**
+	 * Number of cells which are zoomed by default. Less cells will be included if data has less rows.
+	 */
 	private static final int ZOOM_LENGTH = 5;
+
+	/**
+	 * A proportion of circle in cell
+	 */
 	private final float CIRCLE_HEIGHT_PROPORTION = 0.8f;
+
+	/**
+	 * A proportion of label in title cell
+	 */
 	private final float LABEL_HEIGHT_PROPORTION = 0.7f;
+	
 	private static final double SQUEEZE_COEFFICIENT = 0.8;
+
+	/**
+	 * Maximum label display length in characters
+	 */
 	private static final int LABEL_ABBREVIATION_LENGTH = 64;
 
 	private CorrelationMatrix matrix;
 
+	// region Current presentational state
+	
+	/**
+	 * Current data cell size, depends on component preferred size
+	 */
 	private double cellSize;
-
-	private Integer zoomJ;
-	private Integer zoomI;
-	private Integer highlightI;
-	private Integer highlightJ;
+	
+	/**
+	 * Current font for title labels. Size depends on component's preferred size, for family see {@link CorrelationMatrix#labelsFont}
+	 */
 	private Font labelsFont;
 
+	private /* Nullable */ CellCoordinates zoomCoordinates;
+	private /* Nullable */ CellCoordinates highlightCoordinates;
+
+	// endregion
+	
 	/**
 	 * Creates new grid component.
 	 */
@@ -48,11 +74,11 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		ToolTipManager.sharedInstance().registerComponent(this);
 	}
 
-	private boolean isCompact()
-	{
-		return cellSize < matrix.getCompactCellSize();
-	}
-
+	/**
+	 * Paints this component (data cells, column titles, highlights and zoom) into given graphical context
+	 *
+	 * @param g graphical context
+	 */
 	@Override
 	protected void paintComponent(Graphics g)
 	{
@@ -102,9 +128,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		}
 
 		// drawing zoom
-		if (zoomI != null)
+		if (zoomCoordinates != null)
 		{
-			Zoom zoom = createZoom(g2d, zoomI, zoomJ);
+			Zoom zoom = createZoom(g2d, zoomCoordinates);
 			paintZoom(zoom, g2d);
 		}
 
@@ -115,19 +141,32 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.dispose();
 	}
 
-
+	/**
+	 * If highlight is currenly active, paint highlight lines
+	 *
+	 * @param g2d graphical context
+	 */
 	private void paintHighlights(Graphics2D g2d)
 	{
-		if (highlightI != null)
+		if (highlightCoordinates != null)
 		{
+			int i = highlightCoordinates.i;
+			int j = highlightCoordinates.j;
 			g2d.setColor(matrix.getHighlightColor());
-			g2d.fillRect(0, (int) (highlightJ * cellSize), getWidth(), (int) Math.round(cellSize));
-			g2d.fillRect((int) (getWidth() - (matrix.length() - highlightI) * cellSize), 0, (int) Math.round(cellSize),
+			g2d.fillRect(0, (int) (j * cellSize), getWidth(), (int) Math.round(cellSize));
+			g2d.fillRect((int) (getWidth() - (matrix.length() - i) * cellSize), 0, (int) Math.round(cellSize),
 					getHeight());
 		}
 	}
 
-	double getValue(int i, int j)
+	/**
+	 * Returns correlation value (square) for given cell coordinates.
+	 *
+	 * @param i row index
+	 * @param j column index
+	 * @return correlation value
+	 */
+	private double getValue(int i, int j)
 	{
 		double value;
 		if (matrix.getData()[i][j] < 0)
@@ -141,7 +180,13 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		return value;
 	}
 
-	Cell createCell(int i, int j)
+	/**
+	 * Creates data cell model for given data coordinates
+	 * @param i row index
+	 * @param j column index 
+	 * @return cell model
+	 */
+	private Cell createCell(int i, int j)
 	{
 		Cell cell = new Cell();
 		cell.x = getWidth() - (matrix.length() - i) * cellSize;
@@ -189,7 +234,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// preparing shape properties
 		double margin = ((cell.size - cell.size * CIRCLE_HEIGHT_PROPORTION) / 2);
 		double radiusY = cell.size - margin * 2;
-		double radiusX = (cell.size - margin * 2 /* radius margin */) * (1.0 - Math.abs(cell.value) * SQUEEZE_COEFFICIENT);
+		double radiusX =
+				(cell.size - margin * 2 /* radius margin */) * (1.0 - Math.abs(cell.value) * SQUEEZE_COEFFICIENT);
 		Color fillColor;
 
 		double rotation;
@@ -216,10 +262,12 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			AffineTransform nextTransform = (AffineTransform) currentTransform.clone();
 			nextTransform.rotate(rotation, cell.x + cell.size / 2, cell.y + cell.size / 2);
 			g2d.setTransform(nextTransform);
-			g2d.fillOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX, (int) radiusY);
+			g2d.fillOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX,
+					(int) radiusY);
 			g2d.setColor(matrix.getEllipseStrokeColor());
 			g2d.setStroke(new BasicStroke(matrix.getEllipseStrokeWidth()));
-			g2d.drawOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX, (int) radiusY);
+			g2d.drawOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX,
+					(int) radiusY);
 			g2d.setTransform(currentTransform);
 
 		}
@@ -229,8 +277,18 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		}
 	}
 
-	private Zoom createZoom(Graphics2D g2d, int i, int j)
+	/**
+	 * Creates zoom model with pre-calculated coordinates for it's components.
+	 * 
+	 * @param g2d graphical context
+	 * @param initiatorCellCoordinates the coordinates of cell which was active during zoom initiation.
+	 * @return {@link Zoom} model
+	 */
+	private Zoom createZoom(Graphics2D g2d, CellCoordinates initiatorCellCoordinates)
 	{
+		int i = initiatorCellCoordinates.i;
+		int j = initiatorCellCoordinates.j;
+
 		Zoom zoom = new Zoom();
 		zoom.length = Math.min(ZOOM_LENGTH, matrix.length());
 
@@ -261,6 +319,11 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		return zoom;
 	}
 
+	/**
+	 * Paints given zoom model into given graphical context
+	 * @param zoom zoom model
+	 * @param g2d graphical context
+	 */
 	private void paintZoom(Zoom zoom, Graphics2D g2d)
 	{
 		// drawing zoom selection border
@@ -344,23 +407,20 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
-		Optional<Point> optionalPoint = detectCell(e.getX(), e.getY());
-		if (optionalPoint.isPresent())
+		Optional<CellCoordinates> optionalCellCoordinates = detectCell(e.getX(), e.getY());
+		if (optionalCellCoordinates.isPresent())
 		{
-			Point point = optionalPoint.get();
-			zoomI = point.x;
-			zoomJ = point.y;
+			zoomCoordinates = optionalCellCoordinates.get();
 		}
-
-		if (e.getX() < getWidth() - cellSize * matrix.length())
+		else if (e.getX() < getWidth() - cellSize * matrix.length())
 		{
-			highlightJ = (int) (e.getY() / cellSize);
-			highlightI = highlightJ;
+			// label is pressed
+			int ij = (int) (e.getY() / cellSize);
+			highlightCoordinates = new CellCoordinates(ij, ij);
 		}
 		else
 		{
-			highlightJ = null;
-			highlightI = null;
+			highlightCoordinates = null;
 		}
 		repaint();
 	}
@@ -368,8 +428,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	@Override
 	public void mouseReleased(MouseEvent e)
 	{
-		zoomI = null;
-		zoomJ = null;
+		zoomCoordinates = null;
 		repaint();
 	}
 
@@ -383,30 +442,34 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	{
 	}
 
+	/**
+	 * Handles mouse dragging.
+	 * If currentrly displaying zoom
+	 *
+	 * @param e
+	 */
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
 		AtomicBoolean doRepaint = new AtomicBoolean();
-		if (zoomI != null)
+		if (zoomCoordinates != null)
 		{
-			detectCell(e.getX(), e.getY()).ifPresent(coordinatess -> {
-				zoomI = coordinatess.x;
-				zoomJ = coordinatess.y;
+			detectCell(e.getX(), e.getY()).ifPresent(coordinates -> {
+				zoomCoordinates = coordinates;
 				doRepaint.set(true);
 			});
 		}
 
-		if (highlightI != null)
+		if (highlightCoordinates != null)
 		{
 			if (e.getX() < getWidth() - cellSize * matrix.length())
 			{
-				highlightJ = (int) (e.getY() / cellSize);
-				highlightI = highlightJ;
+				int ij = (int) (e.getY() / cellSize);
+				highlightCoordinates = new CellCoordinates(ij, ij);
 			}
 			else
 			{
-				highlightJ = null;
-				highlightI = null;
+				highlightCoordinates = null;
 			}
 			doRepaint.set(true);
 		}
@@ -421,18 +484,27 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	{
 	}
 
+	/**
+	 * Returns tooltip text with column title, if mouse if over label.
+	 * Returns tooltip with correlations and both columns titles if mouse is over data cell
+	 *
+	 * @param event mouse event which triggered this tooltip
+	 * @return tooltip text
+	 */
 	@Override
 	public String getToolTipText(MouseEvent event)
 	{
 		repaint();
-		Optional<Point> optionalCellIndexes = detectCell(event.getX(), event.getY());
+		Optional<CellCoordinates> optionalCellCoordinates = detectCell(event.getX(), event.getY());
 
-
-		if (optionalCellIndexes.isPresent())
+		if (optionalCellCoordinates.isPresent())
 		{
-			Point cellIndexes = optionalCellIndexes.get();
-			int i = cellIndexes.x;
-			int j = cellIndexes.y;
+			// mouse is above data cell
+			CellCoordinates cellCoordinates = optionalCellCoordinates.get();
+			int i = cellCoordinates.i;
+			int j = cellCoordinates.j;
+
+			// creating HTML text displaying coordinates
 			String text = "<html>";
 			DataType dataTypeI = matrix.getDataTypes().get(i);
 			DataType dataTypeJ = matrix.getDataTypes().get(j);
@@ -440,18 +512,17 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			text += matrix.getTitles().get(j) + "<br/>";
 			if (dataTypeI == DataType.NUMERIC && (dataTypeJ == DataType.NUMERIC))
 			{  // Numeric vs. Numeric
-
-				text += "Pearson's R\u00B2 = " + formatValue(matrix.getDataSqr()[i][j]) + "<br/>";
-				text += "Pearson's R = " + formatValue(matrix.getData()[i][j]);
+				text += "Pearson's R\u00B2 = " + formatCorrelationValue(matrix.getDataSqr()[i][j]) + "<br/>";
+				text += "Pearson's R = " + formatCorrelationValue(matrix.getData()[i][j]);
 			}
 			else if (dataTypeI == DataType.NOMINAL && dataTypeJ == DataType.NOMINAL)
 			{ // Nominal vs. Nominal
 
-				text += "Cramer's V = " + formatValue(matrix.getDataSqr()[i][j]);
+				text += "Cramer's V = " + formatCorrelationValue(matrix.getDataSqr()[i][j]);
 			}
 			else
 			{ // others (assume Numeric vs. Nominal)
-				text += "ANOVA R\u00B2 = " + formatValue(matrix.getDataSqr()[i][j]);
+				text += "ANOVA R\u00B2 = " + formatCorrelationValue(matrix.getDataSqr()[i][j]);
 			}
 			text += "</html>";
 			return text;
@@ -466,21 +537,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		}
 	}
 
-	private String formatValue(double value)
-	{
-		if (Double.isNaN(value))
-		{
-			return "N/A";
-		}
-		else
-		{
-			return String.format("%.4f", value);
-		}
-	}
-
 	/**
 	 * Creates custom tooltip for this correlation matrix grid, with respect to tooltip presentational properties specified in {@link CorrelationMatrix}.
-	 * 
+	 *
 	 * @return created tooltip.
 	 */
 	@Override
@@ -521,29 +580,28 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	@Override
 	public Dimension getPreferredSize()
 	{
-
-		double freeWidth =
+		double availableWidth =
 				matrix.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - matrix.getGridMargin() * 2;
-		double freeHeight = matrix.getHeight() - matrix.getGridMargin() * 2;
-		boolean horizontalFit;
-		float fontHeight = (float) (freeHeight / matrix.length());
+		double availableHeight = matrix.getHeight() - matrix.getGridMargin() * 2;
+		float fontHeight = (float) (availableHeight / matrix.length());
 		double fontWidth = getLabelsWidth(matrix.getTitles(), matrix.getFont().deriveFont(fontHeight));
 		double margin = fontHeight * (1 - LABEL_HEIGHT_PROPORTION) / 2;
 		double labelCellProportion = (fontWidth + margin * 2) / (fontHeight + margin * 2);
 
-		if (freeHeight > freeWidth)
+		boolean horizontalFit;
+		if (availableHeight > availableWidth)
 		{
 			// free size is vertical rectangle, but grid is always horizontal one
 			horizontalFit = true;
 		}
 		else
 		{
-			// Let's that component is exact as available size (may be not in reality).
+			// Let's assume that component's size is exact as available size (may be not in reality).
 			// Reason - to check if there would be enough (or more) space for labels if so.
 			// If enough - the grid is fitting vertically or exactly, and cell size becomes known.
 
-			double labelsWidth = freeWidth - freeHeight;
-			double requiredLabelsWidth = (freeHeight / matrix.length()) * labelCellProportion;
+			double labelsWidth = availableWidth - availableHeight;
+			double requiredLabelsWidth = (availableHeight / matrix.length()) * labelCellProportion;
 			horizontalFit = !(labelsWidth > requiredLabelsWidth);
 		}
 
@@ -560,28 +618,40 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			//
 			// label cell height = width / (length + label cell proportion)
 
-			cellSize = freeWidth / (matrix.length() + labelCellProportion);
+			cellSize = availableWidth / (matrix.length() + labelCellProportion);
 		}
 		else
 		{
-			cellSize = freeHeight / matrix.length();
+			cellSize = availableHeight / matrix.length();
 		}
 		labelsFont = matrix.getFont().deriveFont((float) cellSize * LABEL_HEIGHT_PROPORTION);
 
 		// correcting cell size if label is too long because not proportional font scaling
 		double labelWidth = getLabelsWidth(matrix.getTitles(), labelsFont);
-		double error = freeWidth - cellSize * matrix.length() - labelWidth - (cellSize * (1 - LABEL_HEIGHT_PROPORTION));
-		cellSize = Math.min(cellSize + error / matrix.length(), freeHeight / matrix.length());
-		
+		double error =
+				availableWidth - cellSize * matrix.length() - labelWidth - (cellSize * (1 - LABEL_HEIGHT_PROPORTION));
+		cellSize = Math.min(cellSize + error / matrix.length(), availableHeight / matrix.length());
+
 		if (horizontalFit)
 		{
-			return new Dimension((int) freeWidth, (int) (matrix.length() * cellSize));
+			return new Dimension((int) availableWidth, (int) (matrix.length() * cellSize));
 		}
 		else
 		{
-			return new Dimension((int) (freeHeight + labelWidth + cellSize * (1 - LABEL_HEIGHT_PROPORTION)),
-					(int) freeHeight);
+			return new Dimension((int) (availableHeight + labelWidth + cellSize * (1 - LABEL_HEIGHT_PROPORTION)),
+					(int) availableHeight);
 		}
+	}
+
+	/**
+	 * Returns whether matrix must be displayed in compact mode (square correlation cells).
+	 * {@see com.earnix.eo.gui.correlation.CorrelationMatrix#compactCellSize}
+	 *
+	 * @return {@code true} if matrix must be displayed in compact mode
+	 */
+	private boolean isCompact()
+	{
+		return cellSize < matrix.getCompactCellSize();
 	}
 
 	/**
@@ -592,7 +662,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param y y coordinate on component
 	 * @return Cell indexes if there is a cell on given on given coordinates, {@link Optional#empty()} otherwise.
 	 */
-	private Optional<Point> detectCell(int x, int y)
+	private Optional<CellCoordinates> detectCell(int x, int y)
 	{
 		double cellsStart = getWidth() - cellSize * matrix.length();
 		if (x > cellsStart)
@@ -601,10 +671,29 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			int j = (int) (y / cellSize);
 			if (i < matrix.length() && j < matrix.length())
 			{
-				return Optional.of(new Point(i, j));
+				return Optional.of(new CellCoordinates(i, j));
 			}
 		}
 		return Optional.empty();
+	}
+
+	/**
+	 * Creates string for double data value, keeping 4 decimal placec.
+	 * In case of {@link Double#NaN}, returns "N/A".
+	 *
+	 * @param value value to format
+	 * @return formatted value as {@link String}
+	 */
+	private String formatCorrelationValue(double value)
+	{
+		if (Double.isNaN(value))
+		{
+			return "N/A";
+		}
+		else
+		{
+			return String.format("%.4f", value);
+		}
 	}
 
 	/**
