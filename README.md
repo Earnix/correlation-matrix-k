@@ -7,7 +7,7 @@ A correlation matrix is a table showing correlation coefficients between variabl
 
 Component anti-aliasing is explicitly enabled.
 
-![screenshot](/screen.png)
+<p align="center"><img src="/screen.png"></img></p>
 
 ## Getting Started
 

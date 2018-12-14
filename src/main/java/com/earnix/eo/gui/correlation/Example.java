@@ -2,6 +2,7 @@ package com.earnix.eo.gui.correlation;
 
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -118,7 +119,7 @@ public class Example
 		);
 
 		CorrelationMatrix matrix = new CorrelationMatrix(rowsTypes, rowsTitles, correlations, correlationsSqr);
-
+		matrix.setBackground(Color.WHITE);
 		frame.getContentPane().add(matrix);
 		frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		frame.setVisible(true);
