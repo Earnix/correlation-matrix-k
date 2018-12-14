@@ -54,7 +54,7 @@ public class CorrelationMatrix extends JPanel
 	private Color highlightColor = new Color(0xB2e3d7b4, true);
 	private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
 	private Color labelsColor = new Color(0x0);
-	private int compactCellSize = 16;
+	private int compactCellSize = 50;
 	private int gridMargin = 20;
 
 	private final CorrelationMatrixGrid grid;
@@ -176,6 +176,10 @@ public class CorrelationMatrix extends JPanel
 
 	public void setHighlightColor(Color highlightColor)
 	{
+		if (highlightColor.getAlpha() == 255)
+		{
+			throw new IllegalArgumentException("Highlight color should have opacity component");
+		}
 		this.highlightColor = highlightColor;
 	}
 
