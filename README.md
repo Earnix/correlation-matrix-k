@@ -5,6 +5,10 @@ Library provides correlation matrix UI component for Swing. As input, it receive
 
 A correlation matrix is a table showing correlation coefficients between variables. Each cell in the table shows the correlation between two variables. A correlation matrix is used as a way to summarize data, as an input into a more advanced analysis, and as a diagnostic for advanced analyses.
 
+Component anti-aliasing is explicitly enabled.
+
+![screenshot](/screen.png)
+
 ## Getting Started
 
 ### Prerequisites

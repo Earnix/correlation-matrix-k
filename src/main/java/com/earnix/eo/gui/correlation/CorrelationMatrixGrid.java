@@ -294,21 +294,21 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		Zoom zoom = new Zoom();
 		zoom.length = Math.min(ZOOM_LENGTH, matrix.length());
 
-		zoom.startI = Math.min(Math.max(i - zoom.length / 2, 0), matrix.length() - zoom.length);
-		zoom.startJ = Math.min(Math.max(j - zoom.length / 2, 0), matrix.length() - zoom.length);
+		zoom.i = Math.min(Math.max(i - zoom.length / 2, 0), matrix.length() - zoom.length);
+		zoom.j = Math.min(Math.max(j - zoom.length / 2, 0), matrix.length() - zoom.length);
 
 		zoom.zoomSelectionSize = zoom.length * cellSize;
 		// zoom cell size should take 1/4 of space
 		zoom.cellsSize = getHeight() / 4;
 		zoom.cellSize = zoom.cellsSize / zoom.length;
 		zoom.labelsMargin = zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION) / 2;
-		zoom.font = matrix.getFont().deriveFont((float) zoom.cellSize);
+		zoom.font = matrix.getFont().deriveFont((float) zoom.cellSize * LABEL_HEIGHT_PROPORTION);
 
-		zoom.horizontalLabels = matrix.getTitles().subList(zoom.startJ, zoom.startJ + zoom.length);
+		zoom.horizontalLabels = matrix.getTitles().subList(zoom.j, zoom.j + zoom.length);
 		zoom.horizontalLabelsWidth =
 				getLabelsWidth(zoom.horizontalLabels, zoom.font) + zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION);
 
-		zoom.verticalLabels = matrix.getTitles().subList(zoom.startI, zoom.startI + zoom.length);
+		zoom.verticalLabels = matrix.getTitles().subList(zoom.i, zoom.i + zoom.length);
 		zoom.verticalLabelsWidth =
 				getLabelsWidth(zoom.verticalLabels, zoom.font) + zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION);
 
@@ -332,7 +332,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// drawing zoom selection border
 		g2d.setColor(matrix.getZoomSelectionBorderColor());
 		g2d.setStroke(new BasicStroke(matrix.getZoomSelectionBorderWidth()));
-		g2d.drawRect((int) (getWidth() - (matrix.length() - zoom.startI) * cellSize), (int) (zoom.startJ * cellSize),
+		g2d.drawRect((int) (getWidth() - (matrix.length() - zoom.i) * cellSize), (int) (zoom.j * cellSize),
 				(int) zoom.zoomSelectionSize, (int) zoom.zoomSelectionSize);
 
 		// drawing zoom area
@@ -348,8 +348,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		{
 			for (int m = 0; m < zoom.length; m++)
 			{
-				int i = zoom.startI + l;
-				int j = zoom.startJ + m;
+				int i = zoom.i + l;
+				int j = zoom.j + m;
 				if (i != j) // skipping diagonal
 				{
 					int x = (int) (zoom.x + zoom.width - zoom.cellsSize + l * zoom.cellSize);
@@ -542,7 +542,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	}
 
 	/**
-	 * Creates custom tooltip for this correlation matrix grid, with respect to tooltip presentational properties specified in {@link CorrelationMatrix}.
+	 * Creates custom tooltip for this correlation matrix grid, with respect to tooltip presentational properties specified in {@link CorrelationMatrix},
+	 * like padding and border. Using custom subclass of tooltip to provide enable anti-aliasing
 	 *
 	 * @return created tooltip.
 	 */
@@ -622,10 +623,11 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		}
 		labelsFont = matrix.getFont().deriveFont((float) cellSize * LABEL_HEIGHT_PROPORTION);
 
-		// correcting cell size if label is too long because not proportional font scaling
+		// correcting cell size if label is too long because of not proportional font scaling
 		double labelWidth = getLabelsWidth(matrix.getTitles(), labelsFont);
 		double error =
 				availableWidth - cellSize * matrix.length() - labelWidth - (cellSize * (1 - LABEL_HEIGHT_PROPORTION));
+
 		cellSize = Math.min(cellSize + error / matrix.length(), availableHeight / matrix.length());
 
 		if (horizontalFit)

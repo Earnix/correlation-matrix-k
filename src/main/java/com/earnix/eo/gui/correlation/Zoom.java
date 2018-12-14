@@ -11,12 +11,12 @@ class Zoom
 	double labelsMargin;
 	int length;
 
-	int startI;
-	int startJ;
+	int i;
+	int j;
 
 	double zoomSelectionSize;
 
-	double cellSize; // todo expose
+	double cellSize;
 	Font font;
 	List<String> horizontalLabels;
 	double horizontalLabelsWidth;
