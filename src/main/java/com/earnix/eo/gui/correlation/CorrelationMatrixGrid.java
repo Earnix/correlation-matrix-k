@@ -16,39 +16,46 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Correlation matrix table componentm which includes data cells, titles column, highlights (if active) and zoom (if active).
- * Component is supposed to keep its proportion with {@link #getPreferredSize()} and is assumed to be used only within (@link {@link CorrelationMatrix}) as parent.
- * Presentation parameters are stored in {@link CorrelationMatrix}
- *
- * @author Taras Maslov
- * 11/22/2018
+ * Correlation matrix grid component.
+ * <br/>
+ * Visually includes data cells, titles column, highlights (if active), zoom (if active) and tooltip (if active).
+ * Component is assumed to be used only within (@link {@link CorrelationMatrix}) as parent.
+ * Presentation parameters are stored in {@link CorrelationMatrix}.
+ * Two main entry points are {@link #getPreferredSize()}, which calculates main sizing value (@link {@link #cellSize}),
+ * and {@link #paintComponent(Graphics)}, which paints all active visual element's, calculating their properties before.
  */
-
 @SuppressWarnings("FieldCanBeLocal")
 public class CorrelationMatrixGrid extends JPanel implements MouseListener, MouseMotionListener
 {
 	/**
-	 * Number of cells which are zoomed by default. Less cells will be included if data has less rows.
+	 * Number of cells (square side) which are included in zoom by default.
+	 * If data consist of less rows - all of them will be included.
 	 */
 	private static final int ZOOM_LENGTH = 5;
 
 	/**
-	 * A proportion of circle in cell
+	 * A proportion of oval in cell.
 	 */
 	private final float CIRCLE_HEIGHT_PROPORTION = 0.8f;
 
 	/**
-	 * A proportion of label in title cell
+	 * A proportion of label in title cell (height).
 	 */
-	private final float LABEL_HEIGHT_PROPORTION = 0.7f;
+	private final float LABEL_HEIGHT_PROPORTION = 0.8f;
 
+	/**
+	 * Coefficient which restricts oval from squeezing too much.
+	 */
 	private static final double SQUEEZE_COEFFICIENT = 0.8;
 
 	/**
-	 * Maximum label display length in characters
+	 * Maximum label display length in characters.
 	 */
 	private static final int LABEL_ABBREVIATION_LENGTH = 64;
 
+	/**
+	 * Link to main component.
+	 */
 	private CorrelationMatrix matrix;
 
 	// region Current presentational state
@@ -59,24 +66,25 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	private double cellSize;
 
 	/**
-	 * Current font for title labels. Size depends on component's preferred size, for family see {@link CorrelationMatrix#labelsFont}
+	 * Current font for title labels. Size depends on component's preferred size, for family see {@link CorrelationMatrix#labelsFont}.
 	 */
 	private Font labelsFont;
 
 	/**
-	 * If zoom is active, contains coordinates of cell which triggered it, {@code null} otherwise.
+	 * If highlight is active, contains indexes of cell which triggered it, {@code null} otherwise.
 	 */
-	private /* Nullable */ CellCoordinates zoomCoordinates;
+	private /* Nullable */ CellIndex highlightIndex;
 
 	/**
-	 * If highlight is active, contains coordinates of cell which triggered it, {@code null} otherwise.
+	 * If zoom is active, represents current zoom model, {@code null} otherwise.
 	 */
-	private /* Nullable */ CellCoordinates highlightCoordinates;
+	private /* Nullable */ Zoom zoom;
 
 	// endregion
 
 	/**
-	 * Creates new grid component.
+	 * Creates correlation grid component, see
+	 * {@link CorrelationMatrix#CorrelationMatrix(java.util.List, java.util.List, double[][], double[][])}.
 	 */
 	CorrelationMatrixGrid(CorrelationMatrix matrix)
 	{
@@ -87,10 +95,10 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		ToolTipManager.sharedInstance().registerComponent(this);
 	}
 
-	// region painting methods
+	// region Painting methods
 
 	/**
-	 * Paints this component (data cells, column titles, highlights and zoom) into given graphical context
+	 * Paints this component (data cells, column titles, highlights and zoom) into given graphical context.
 	 *
 	 * @param g graphical context
 	 */
@@ -105,7 +113,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		double labelMargin = (1 - LABEL_HEIGHT_PROPORTION) * cellSize / 2;
 		g2d.setFont(labelsFont);
 
-		// Drawing cells and highlights. 
+		// Painting cells and highlights. 
 		// In case of compact mode - highlights are drawn over cells since sells are 
 		// not assumed to be transparent.
 		if (isCompact())
@@ -119,35 +127,32 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			paintCells(g2d);
 		}
 
-		// drawing vertical grid lines
+		// Painting vertical grid lines
 		g2d.setColor(matrix.getGridLinesColor());
 		g2d.setStroke(new BasicStroke(matrix.getGridLinesWidth()));
 		for (int i = 1; i <= matrix.length(); i++)
 		{
 			int x = (int) (getWidth() - cellSize * i);
-			g2d.drawLine(x, 0, x, getHeight() - 1);
+			g2d.drawLine(x, 0, x, getHeight());
 		}
 
 		// drawing horizontal grid lines
 		for (int i = 0; i <= matrix.length() - 1; i++)
 		{
-			g2d.drawLine(0, (int) (i * cellSize), getWidth() - 1, (int) (i * cellSize));
+			g2d.drawLine(0, (int) (i * cellSize), getWidth(), (int) (i * cellSize));
 		}
 
-		// drawing titles
+		// drawing rows titles
 		g2d.setColor(matrix.getLabelsColor());
 		for (int i = 0; i < matrix.length(); i++)
 		{
-			g2d.drawString(abbreviate(matrix.getTitles().get(i)), (int) labelMargin,
-					(int) ((i + 1) * cellSize - labelMargin));
+			String label = abbreviate(matrix.getTitles().get(i));
+			g2d.drawString(label, (int) labelMargin, (int) ((i + 1) * cellSize - labelMargin));
 		}
 
-		// drawing zoom
-		if (zoomCoordinates != null)
-		{
-			Zoom zoom = createZoom(zoomCoordinates);
-			paintZoom(zoom, g2d);
-		}
+		// painting zoom
+		paintZoom(g2d);
+
 
 		// border
 		g2d.setStroke(new BasicStroke(matrix.getBorderWidth()));
@@ -163,10 +168,10 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 */
 	private void paintHighlights(Graphics2D g2d)
 	{
-		if (highlightCoordinates != null)
+		if (highlightIndex != null)
 		{
-			int i = highlightCoordinates.i;
-			int j = highlightCoordinates.j;
+			int i = highlightIndex.i;
+			int j = highlightIndex.j;
 			g2d.setColor(matrix.getHighlightColor());
 			g2d.fillRect(0, (int) (j * cellSize), getWidth(), (int) Math.round(cellSize));
 			g2d.fillRect((int) (getWidth() - (matrix.length() - i) * cellSize), 0, (int) Math.round(cellSize),
@@ -278,7 +283,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param coordinates the coordinates of cell which was active during zoom initiation.
 	 * @return {@link Zoom} model
 	 */
-	Zoom createZoom(CellCoordinates coordinates)
+	Zoom createZoom(CellIndex coordinates)
 	{
 		Zoom zoom = new Zoom();
 		zoom.length = Math.min(ZOOM_LENGTH, matrix.length());
@@ -325,82 +330,84 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	/**
 	 * Paints given zoom model into given graphical context
 	 *
-	 * @param zoom zoom model
 	 * @param g2d graphical context
 	 */
-	private void paintZoom(Zoom zoom, Graphics2D g2d)
+	private void paintZoom(Graphics2D g2d)
 	{
-		// drawing zoom selection border
-		g2d.setColor(matrix.getZoomSelectionBorderColor());
-		g2d.setStroke(new BasicStroke(matrix.getZoomSelectionBorderWidth()));
-		g2d.drawRect((int) (getWidth() - (matrix.length() - zoom.i) * cellSize), (int) (zoom.j * cellSize),
-				(int) zoom.zoomSelectionSize, (int) zoom.zoomSelectionSize);
-
-		// drawing zoom area
-		g2d.setStroke(new BasicStroke(matrix.getZoomBorderWidth()));
-		g2d.setColor(matrix.getZoomBorderColor());
-		g2d.setBackground(matrix.getBackground());
-		g2d.setFont(zoom.font);
-		g2d.clearRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
-		g2d.drawRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
-
-		// drawing cells in zoom area
-		for (int l = 0; l < zoom.length; l++)
+		if (zoom != null)
 		{
-			for (int m = 0; m < zoom.length; m++)
-			{
-				int i = zoom.i + l;
-				int j = zoom.j + m;
-				if (i != j) // skipping diagonal
-				{
-					int x = (int) (zoom.x + zoom.width - zoom.cellsSize + l * zoom.cellSize);
-					int y = (int) (zoom.y + zoom.height - zoom.cellsSize + m * zoom.cellSize);
+			// drawing zoom selection border
+			g2d.setColor(matrix.getZoomSelectionBorderColor());
+			g2d.setStroke(new BasicStroke(matrix.getZoomSelectionBorderWidth()));
+			g2d.drawRect((int) (getWidth() - (matrix.length() - zoom.i) * cellSize), (int) (zoom.j * cellSize),
+					(int) zoom.zoomSelectionSize, (int) zoom.zoomSelectionSize);
 
-					// creating and painting  cell for zoom grid
-					Cell cell = new Cell();
-					cell.x = x;
-					cell.y = y;
-					cell.compact = isCompact();
-					cell.size = zoom.cellSize;
-					cell.value = getValue(i, j);
-					paintCell(g2d, cell);
+			// drawing zoom area
+			g2d.setStroke(new BasicStroke(matrix.getZoomBorderWidth()));
+			g2d.setColor(matrix.getZoomBorderColor());
+			g2d.setBackground(matrix.getBackground());
+			g2d.setFont(zoom.font);
+			g2d.clearRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
+			g2d.drawRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
+
+			// drawing cells in zoom area
+			for (int l = 0; l < zoom.length; l++)
+			{
+				for (int m = 0; m < zoom.length; m++)
+				{
+					int i = zoom.i + l;
+					int j = zoom.j + m;
+					if (i != j) // skipping diagonal
+					{
+						int x = (int) (zoom.x + zoom.width - zoom.cellsSize + l * zoom.cellSize);
+						int y = (int) (zoom.y + zoom.height - zoom.cellsSize + m * zoom.cellSize);
+
+						// creating and painting  cell for zoom grid
+						Cell cell = new Cell();
+						cell.x = x;
+						cell.y = y;
+						cell.compact = isCompact();
+						cell.size = zoom.cellSize;
+						cell.value = getValue(i, j);
+						paintCell(g2d, cell);
+					}
 				}
 			}
-		}
 
-		// drawing grid in zoom area
-		g2d.setColor(matrix.getGridLinesColor());
-		g2d.setStroke(new BasicStroke(matrix.getGridLinesWidth()));
-		for (int k = 0; k < zoom.length; k++)
-		{
-			int y = (int) (zoom.y + zoom.height - k * zoom.cellSize);
-			// horizontal lines
-			g2d.drawLine((int) zoom.x, (int) (zoom.y + y - zoom.cellSize), (int) (zoom.width + zoom.x),
-					(int) (zoom.y + y - zoom.cellSize));
-			// vertical lines
-			int x = (int) (zoom.x + zoom.width - zoom.cellsSize + zoom.cellSize * k);
-			g2d.drawLine(x, (int) zoom.y, x, (int) (zoom.y + zoom.height));
-		}
+			// drawing grid in zoom area
+			g2d.setColor(matrix.getGridLinesColor());
+			g2d.setStroke(new BasicStroke(matrix.getGridLinesWidth()));
+			for (int k = 0; k < zoom.length; k++)
+			{
+				int y = (int) (zoom.y + zoom.height - k * zoom.cellSize);
+				// horizontal lines
+				g2d.drawLine((int) zoom.x, (int) (zoom.y + y - zoom.cellSize), (int) (zoom.width + zoom.x),
+						(int) (zoom.y + y - zoom.cellSize));
+				// vertical lines
+				int x = (int) (zoom.x + zoom.width - zoom.cellsSize + zoom.cellSize * k);
+				g2d.drawLine(x, (int) zoom.y, x, (int) (zoom.y + zoom.height));
+			}
 
 
-		// drawing labels in zoom area
-		g2d.setColor(matrix.getLabelsColor());
-		for (int l = 0; l < zoom.length; l++)
-		{
-			// painting horizontal label
-			String label = abbreviate(zoom.horizontalLabels.get(l));
-			g2d.drawString(label, (int) (zoom.x + zoom.labelsMargin),
-					(int) (zoom.height - zoom.cellsSize + zoom.cellSize * (l + 1) - zoom.labelsMargin));
+			// drawing labels in zoom area
+			g2d.setColor(matrix.getLabelsColor());
+			for (int l = 0; l < zoom.length; l++)
+			{
+				// painting horizontal label
+				String label = abbreviate(zoom.horizontalLabels.get(l));
+				g2d.drawString(label, (int) (zoom.x + zoom.labelsMargin),
+						(int) (zoom.height - zoom.cellsSize + zoom.cellSize * (l + 1) - zoom.labelsMargin));
 
-			// painting vertical label
-			label = abbreviate(zoom.verticalLabels.get(l));
-			AffineTransform transform = new AffineTransform();
-			int vx = (int) (zoom.x + zoom.horizontalLabelsWidth + (l + 1) * zoom.cellSize);
-			int vy = (int) (zoom.verticalLabelsWidth);
-			transform.rotate(-Math.PI / 2, vx, vy);
-			g2d.setTransform(transform);
-			g2d.drawString(label, (int) (vx + zoom.labelsMargin), (int) (vy - zoom.labelsMargin));
-			g2d.setTransform(new AffineTransform());
+				// painting vertical label
+				label = abbreviate(zoom.verticalLabels.get(l));
+				AffineTransform transform = new AffineTransform();
+				int vx = (int) (zoom.x + zoom.horizontalLabelsWidth + (l + 1) * zoom.cellSize);
+				int vy = (int) (zoom.verticalLabelsWidth);
+				transform.rotate(-Math.PI / 2, vx, vy);
+				g2d.setTransform(transform);
+				g2d.drawString(label, (int) (vx + zoom.labelsMargin), (int) (vy - zoom.labelsMargin));
+				g2d.setTransform(new AffineTransform());
+			}
 		}
 	}
 
@@ -418,20 +425,20 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	@Override
 	public void mousePressed(MouseEvent e)
 	{
-		Optional<CellCoordinates> optionalCellCoordinates = detectCell(e.getX(), e.getY());
+		Optional<CellIndex> optionalCellCoordinates = detectCell(e.getX(), e.getY());
 		if (optionalCellCoordinates.isPresent())
 		{
-			zoomCoordinates = optionalCellCoordinates.get();
+			zoom = createZoom(optionalCellCoordinates.get());
 		}
 		else if (e.getX() < getWidth() - cellSize * matrix.length())
 		{
 			// label is pressed
 			int ij = (int) (e.getY() / cellSize);
-			highlightCoordinates = new CellCoordinates(ij, ij);
+			highlightIndex = new CellIndex(ij, ij);
 		}
 		else
 		{
-			highlightCoordinates = null;
+			highlightIndex = null;
 		}
 		repaint();
 	}
@@ -439,7 +446,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	@Override
 	public void mouseReleased(MouseEvent e)
 	{
-		zoomCoordinates = null;
+		zoom = null;
 		repaint();
 	}
 
@@ -462,29 +469,30 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	@Override
 	public void mouseDragged(MouseEvent e)
 	{
-		AtomicBoolean doRepaint = new AtomicBoolean();
-		if (zoomCoordinates != null)
+		boolean repaint = false;
+		if (zoom != null)
 		{
-			detectCell(e.getX(), e.getY()).ifPresent(coordinates -> {
-				zoomCoordinates = coordinates;
-				doRepaint.set(true);
-			});
+			Optional<CellIndex> cellIndex = detectCell(e.getX(), e.getY());
+			if(cellIndex.isPresent()) {
+				zoom = createZoom(cellIndex.get());
+				repaint = true;
+			}
 		}
 
-		if (highlightCoordinates != null)
+		if (highlightIndex != null)
 		{
 			if (e.getX() < getWidth() - cellSize * matrix.length())
 			{
 				int ij = (int) (e.getY() / cellSize);
-				highlightCoordinates = new CellCoordinates(ij, ij);
+				highlightIndex = new CellIndex(ij, ij);
 			}
 			else
 			{
-				highlightCoordinates = null;
+				highlightIndex = null;
 			}
-			doRepaint.set(true);
+			repaint = true;
 		}
-		if (doRepaint.get())
+		if (repaint)
 		{
 			repaint();
 		}
@@ -506,12 +514,12 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	public String getToolTipText(MouseEvent event)
 	{
 		repaint();
-		Optional<CellCoordinates> optionalCellCoordinates = detectCell(event.getX(), event.getY());
+		Optional<CellIndex> optionalCellCoordinates = detectCell(event.getX(), event.getY());
 
 		if (optionalCellCoordinates.isPresent())
 		{
 			// mouse is above data cell
-			CellCoordinates cellCoordinates = optionalCellCoordinates.get();
+			CellIndex cellCoordinates = optionalCellCoordinates.get();
 			int i = cellCoordinates.i;
 			int j = cellCoordinates.j;
 
@@ -688,7 +696,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param y y coordinate on component
 	 * @return Cell indexes if there is a cell on given on given coordinates, {@link Optional#empty()} otherwise.
 	 */
-	private Optional<CellCoordinates> detectCell(int x, int y)
+	private Optional<CellIndex> detectCell(int x, int y)
 	{
 		double cellsStart = getWidth() - cellSize * matrix.length();
 		if (x > cellsStart)
@@ -697,7 +705,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			int j = (int) (y / cellSize);
 			if (i < matrix.length() && j < matrix.length())
 			{
-				return Optional.of(new CellCoordinates(i, j));
+				return Optional.of(new CellIndex(i, j));
 			}
 		}
 		return Optional.empty();

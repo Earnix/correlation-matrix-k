@@ -128,7 +128,7 @@ public class CorrelationMatrixGraphTest
 	{
 		invokeAndWait(() -> {
 			//		Dimension preferredSize = grid.getPreferredSize();
-			Zoom zoom = grid.createZoom(new CellCoordinates(0, 0));
+			Zoom zoom = grid.createZoom(new CellIndex(0, 0));
 			Assertions.assertEquals(zoom.length, matrix.getZoomLength(), "Amount of cells in zoom (in square) must match matrix parameter");
 			Assertions.assertEquals(zoom.cellsSize, grid.getHeight() / (double) 4, 1,
 					"Zoom cells must take 1/4 of grid space");

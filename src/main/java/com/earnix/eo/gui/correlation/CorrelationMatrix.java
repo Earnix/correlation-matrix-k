@@ -6,19 +6,32 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Correlation matrix component which consist of proportionally resizing correlation matrix and temperature scale pane.
- * Provides presentation customization settings. Does not provide calculation of correlations.
+ * Correlation matrix component. Consist of proportionally resizing correlation matrix and temperature scale pane.
+ * Provides presentation customization settings. Does not provide correlations calculation functionality.
+ * <br/>
+ * There are two display modes of correlation matrix. If there is enough space for cell to take equal or
+ * more then {@code 16} pixels (is customizable with {@link #setCompactCellSize(int)}), correlations are displayed s ovals, where oval radius
+ * depends on correlation square absolute value, and fill color depends on square correlation sign.
+ * If there is not enough space - square correlations are displayed as rectangles with inication based on fill color.
+ * {@link #setPositiveColor(Color)} is used for positive correlations and {@link #setNegativeColor(Color)} for
+ * negative ones.
+ * <br/>
+ * Highlight feature covers row and column of specific value after click on title. Zooming feature displays
+ * a region of correlation grid with vertical and horizontal labels. Value of correlation in cell may observed with tooltip.
+ * <br/>
+ * Each presentational setting of matrix can be customized in this component. For example, {@link #setGridLinesWidth(float)}.
+ * Beware of background color of this component. It is used as backgound of grid, zoom, and as interpolated color of cells.
+ * <br/>
  * Correlations should be calculated with following methods depending on data types:
  * <br/>
  * Numeric with numeric - <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson correlation coefficient</a>;
  * <br/>
- * Nominal with nominal - <a href="http://google.com">Cramér's V</a>;
+ * Nominal with nominal - <a href="https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V">Cramér's V</a>;
  * <br/>
  * Numeric with nominal - <a href="https://researchbasics.education.uconn.edu/anova_regression_and_chi-square/">ANOVA (ANalysis Of VAriance)</a>;
  */
 public class CorrelationMatrix extends JPanel
 {
-
 	private final List<String> titles;
 	private final double[][] correlations;
 	private final double[][] correlationsSqr;
@@ -29,39 +42,129 @@ public class CorrelationMatrix extends JPanel
 	 * In case if there is not enough data rows - maximum available amount will be displayed.
 	 */
 	private int zoomLength = 5;
+
+	/**
+	 * Grid border width.
+	 */
 	private float borderWidth = 2;
+
+	/**
+	 * Grid border color.
+	 */
 	private Color borderColor = new Color(0x0);
+
+	/**
+	 * Color used to indicate positive correlations. Is mixed with background color.
+	 */
 	private Color positiveColor = new Color(0xfa7b64);
+
+	/**
+	 * Color used to indicate negative correlations. Is mixed with background color.
+	 */
 	private Color negativeColor = new Color(0x274184);
+
+	/**
+	 * Background color of cell and title tooltips.
+	 */
 	private Color toolTipBackgroundColor = new Color(0xfdfdfd);
+
+	/**
+	 * Border width of ellipse (in non-compact mode).
+	 */
 	private float ellipseStrokeWidth = 1;
+
+	/**
+	 * Border color of ellipse (in non-compact mode).
+	 */
 	private Color ellipseStrokeColor = new Color(0x111111);
+
+	/**
+	 * Cell and title tooltip's border color.
+	 */
 	private Color toolTipBorderColor = new Color(0xc9d1d1);
+
+	/**
+	 * Cell and title tooltip's border width.
+	 */
 	private int toolTipBorderWidth = 1;
+
+	/**
+	 * Cell and and title tooltip's text color.
+	 */
 	private Color toolTipTextColor = new Color(0x32383d);
+
+	/**
+	 * Width of zoom border.
+	 */
 	private float zoomBorderWidth = 0.5f;
+
+	/**
+	 * Color of zoom border.
+	 */
 	private Color zoomBorderColor = new Color(0x0);
+
+	/**
+	 * Width of border which highlights currently zoomed cells in main grid..
+	 */
 	private float zoomSelectionBorderWidth = 2f;
+
+	/**
+	 * Color of border which highlights currently zoomed cells in main grid.
+	 */
 	private Color zoomSelectionBorderColor = new Color(0x0);
+
+	/**
+	 * Grid lines width (main and zoom).
+	 */
 	private Color gridLinesColor = new Color(0x7F000000, true);
+
+	/**
+	 * Grid lines width (main and zoom).
+	 */
 	private float gridLinesWidth = 0.3f;
+
+	/**
+	 * Cell and title tooltip's text font size.
+	 */
 	private float tooltipFontSize = 20f;
+
+	/**
+	 * Cell and title tooltip's padding (between text and border).
+	 */
 	private int tooltipPadding = 20;
 
 	/**
 	 * Color to use for highlight lines. Should be partially transparent to since completely covers data cells in compact mode.
 	 */
 	private Color highlightColor = new Color(0xB2e3d7b4, true);
+
+	/**
+	 * Font to display labels. Only font family is taken into account, because size is calculated depending on component size.
+	 * Also is used as tooltip's font.
+	 */
 	private Font labelsFont = new Font("Tahoma", Font.PLAIN, 22);
+
+	/**
+	 * Labels color (in main grid and in zoom).
+	 */
 	private Color labelsColor = new Color(0x0);
+
+	/**
+	 * If cell is smaller - compact display mode will be applied.
+	 * {@see com.earnix.eo.gui.correlation.CorrelationMatrixGrid#createCell(int, int)}
+	 */
 	private int compactCellSize = 50;
+
+	/**
+	 * Margin between grid and it's parent (this component).
+	 */
 	private int gridMargin = 20;
 
 	private final CorrelationMatrixGrid grid;
 	private final TemperatureScalePanel temperatureScalePanel;
 
 	/**
-	 * Creates Main correlation matrix component
+	 * Creates correlation matrix component.
 	 *
 	 * @param dataTypes types of data rows. {@see com.earnix.eo.gui.correlation.DataType}
 	 * @param titles data rows titles to display
@@ -84,17 +187,19 @@ public class CorrelationMatrix extends JPanel
 
 		setLayout(new GridBagLayout());
 
+		// placing grid in the center
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
 		constraints.weightx = 1.0;
 		constraints.insets = new Insets(gridMargin, gridMargin, gridMargin, gridMargin);
 		constraints.anchor = GridBagConstraints.CENTER;
 		grid = new CorrelationMatrixGrid(this);
-		grid.setBackground(this.getBackground());
+		grid.setBackground(getBackground());
 		add(grid, constraints);
 
+		// placing temperature scale on the right side.
 		temperatureScalePanel = new TemperatureScalePanel(this);
-		temperatureScalePanel.setBackground(this.getBackground());
+		temperatureScalePanel.setBackground(getBackground());
 		constraints.gridx = 1;
 		constraints.anchor = GridBagConstraints.EAST;
 		constraints.weightx = 0;
@@ -113,7 +218,7 @@ public class CorrelationMatrix extends JPanel
 	}
 
 	// region Accessors
-	
+
 	public List<String> getTitles()
 	{
 		return this.titles;
