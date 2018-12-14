@@ -7,7 +7,7 @@ import java.util.Objects;
 
 /**
  * Correlation matrix component which consist of proportionally resizing correlation matrix and temperature scale pane.
- * Provides presentation customization settings. Does not provide calculation of correlations. 
+ * Provides presentation customization settings. Does not provide calculation of correlations.
  * Correlations should be calculated with following methods depending on data types:
  * <br/>
  * Numeric with numeric - <a href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Pearson correlation coefficient</a>;
@@ -24,6 +24,11 @@ public class CorrelationMatrix extends JPanel
 	private final double[][] correlationsSqr;
 	private final List<RowType> dataTypes;
 
+	/**
+	 * Maximum amount of cells (in square) to be displayed in zoom.
+	 * In case if there is not enough data rows - maximum available amount will be displayed.
+	 */
+	private int zoomLength = 5;
 	private float borderWidth = 2;
 	private Color borderColor = new Color(0x0);
 	private Color positiveColor = new Color(0xfa7b64);
@@ -52,7 +57,7 @@ public class CorrelationMatrix extends JPanel
 	private int compactCellSize = 16;
 	private int gridMargin = 20;
 
-	private final CorrelationMatrixGrid graph;
+	private final CorrelationMatrixGrid grid;
 	private final TemperatureScalePanel temperatureScalePanel;
 
 	/**
@@ -85,9 +90,9 @@ public class CorrelationMatrix extends JPanel
 		constraints.weightx = 1.0;
 		constraints.insets = new Insets(gridMargin, gridMargin, gridMargin, gridMargin);
 		constraints.anchor = GridBagConstraints.CENTER;
-		graph = new CorrelationMatrixGrid(this);
-		graph.setBackground(this.getBackground());
-		add(graph, constraints);
+		grid = new CorrelationMatrixGrid(this);
+		grid.setBackground(this.getBackground());
+		add(grid, constraints);
 
 		temperatureScalePanel = new TemperatureScalePanel(this);
 		temperatureScalePanel.setBackground(this.getBackground());
@@ -371,11 +376,22 @@ public class CorrelationMatrix extends JPanel
 		return this;
 	}
 
+	public int getZoomLength()
+	{
+		return zoomLength;
+	}
+
+	public CorrelationMatrix setZoomLength(int zoomLength)
+	{
+		this.zoomLength = zoomLength;
+		return this;
+	}
+
 	// 
 
 	public CorrelationMatrixGrid getGrid()
 	{
-		return graph;
+		return grid;
 	}
 
 	public TemperatureScalePanel getTemperatureScalePanel()

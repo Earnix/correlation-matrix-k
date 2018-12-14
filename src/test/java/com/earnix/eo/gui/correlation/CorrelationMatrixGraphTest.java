@@ -20,6 +20,8 @@ public class CorrelationMatrixGraphTest
 	private static CorrelationMatrix matrix;
 	private static double[][] correlations;
 	private static double[][] correlationsSqr;
+	private static TemperatureScalePanel temperatureScale;
+	private static CorrelationMatrixGrid grid;
 
 	@BeforeAll
 	static void before()
@@ -52,7 +54,9 @@ public class CorrelationMatrixGraphTest
 		List<String> rowsTitles = Arrays.asList("Duration", "Method", "Year", "Amount", "Status", "Score");
 
 		matrix = new CorrelationMatrix(rowsTypes, rowsTitles, correlations, correlationsSqr);
-
+		grid = matrix.getGrid();
+		temperatureScale = matrix.getTemperatureScalePanel();
+		
 		JFrame frame = new JFrame();
 		frame.setTitle("Correlation Matrix K");
 		frame.setSize(800, 800);
@@ -100,5 +104,18 @@ public class CorrelationMatrixGraphTest
 
 		// checking cell value
 		Assertions.assertEquals(correlationsSqr[1][0], cell_1_0.value, "Value should match input data");
+	}
+
+	@Test
+	void zoom()
+	{
+//		Dimension preferredSize = grid.getPreferredSize();
+		Zoom zoom = grid.createZoom(new CellCoordinates(0, 0));
+		Assertions.assertEquals(zoom.length, matrix.getZoomLength(),
+				"Amount of cells in zoom (in square) must match matrix parameter");
+		Assertions.assertEquals(zoom.cellsSize, grid.getWidth() / (double)4, 0.1, "Zoom cells must take 1/4 of grid space");
+		Assertions.assertEquals(zoom.startI, 0, "Initial cell indexes should match");
+		Assertions.assertEquals(zoom.startJ, 0, "Initial cell indexes should match");
+		
 	}
 }

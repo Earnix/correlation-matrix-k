@@ -132,7 +132,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// drawing zoom
 		if (zoomCoordinates != null)
 		{
-			Zoom zoom = createZoom(g2d, zoomCoordinates);
+			Zoom zoom = createZoom(zoomCoordinates);
 			paintZoom(zoom, g2d);
 		}
 
@@ -282,11 +282,10 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	/**
 	 * Creates zoom model with pre-calculated coordinates for it's components.
 	 * 
-	 * @param g2d graphical context
 	 * @param initiatorCellCoordinates the coordinates of cell which was active during zoom initiation.
 	 * @return {@link Zoom} model
 	 */
-	private Zoom createZoom(Graphics2D g2d, CellCoordinates initiatorCellCoordinates)
+	Zoom createZoom(CellCoordinates initiatorCellCoordinates)
 	{
 		int i = initiatorCellCoordinates.i;
 		int j = initiatorCellCoordinates.j;
@@ -298,12 +297,12 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		zoom.startJ = Math.min(Math.max(j - zoom.length / 2, 0), matrix.length() - zoom.length);
 
 		zoom.zoomSelectionSize = zoom.length * cellSize;
-		zoom.cellSize = (getHeight() / 2) / 2 / zoom.length; // todo expose
+		// zoom cell size should take 1/4 of space
+		zoom.cellsSize = getHeight() / 4;
+		zoom.cellSize = zoom.cellsSize / zoom.length;
 		zoom.labelsMargin = zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION) / 2;
 		zoom.font = matrix.getFont().deriveFont((float) zoom.cellSize);
-
-		g2d.setFont(zoom.font);
-
+		
 		zoom.horizontalLabels = matrix.getTitles().subList(zoom.startJ, zoom.startJ + zoom.length);
 		zoom.horizontalLabelsWidth =
 				getLabelsWidth(zoom.horizontalLabels, zoom.font) + zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION);
@@ -447,7 +446,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 	/**
 	 * Handles mouse dragging.
-	 * If currentrly displaying zoom
+	 * If currently displaying zoom
 	 *
 	 * @param e
 	 */
