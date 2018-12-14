@@ -37,7 +37,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * A proportion of label in title cell
 	 */
 	private final float LABEL_HEIGHT_PROPORTION = 0.7f;
-	
+
 	private static final double SQUEEZE_COEFFICIENT = 0.8;
 
 	/**
@@ -48,12 +48,12 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	private CorrelationMatrix matrix;
 
 	// region Current presentational state
-	
+
 	/**
 	 * Current data cell size, depends on component preferred size
 	 */
 	private double cellSize;
-	
+
 	/**
 	 * Current font for title labels. Size depends on component's preferred size, for family see {@link CorrelationMatrix#labelsFont}
 	 */
@@ -63,7 +63,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	private /* Nullable */ CellCoordinates highlightCoordinates;
 
 	// endregion
-	
+
 	/**
 	 * Creates new grid component.
 	 */
@@ -184,8 +184,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 	/**
 	 * Creates data cell model for given data coordinates
+	 *
 	 * @param i row index
-	 * @param j column index 
+	 * @param j column index
 	 * @return cell model
 	 */
 	Cell createCell(int i, int j)
@@ -255,7 +256,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// interpolating fill color between main (positive or negative) and white
 		double interpolation = Math.abs(cell.value);
 
-		g2d.setColor(interpolate(fillColor, matrix.getBackground(), interpolation));
+		g2d.setColor(interpolateColor(fillColor, matrix.getBackground(), interpolation));
 
 		// drawing cell
 		if (!cell.compact)
@@ -281,7 +282,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 	/**
 	 * Creates zoom model with pre-calculated coordinates for it's components.
-	 * 
+	 *
 	 * @param initiatorCellCoordinates the coordinates of cell which was active during zoom initiation.
 	 * @return {@link Zoom} model
 	 */
@@ -302,7 +303,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		zoom.cellSize = zoom.cellsSize / zoom.length;
 		zoom.labelsMargin = zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION) / 2;
 		zoom.font = matrix.getFont().deriveFont((float) zoom.cellSize);
-		
+
 		zoom.horizontalLabels = matrix.getTitles().subList(zoom.startJ, zoom.startJ + zoom.length);
 		zoom.horizontalLabelsWidth =
 				getLabelsWidth(zoom.horizontalLabels, zoom.font) + zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION);
@@ -322,6 +323,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 	/**
 	 * Paints given zoom model into given graphical context
+	 *
 	 * @param zoom zoom model
 	 * @param g2d graphical context
 	 */
@@ -643,7 +645,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 *
 	 * @return {@code true} if matrix must be displayed in compact mode
 	 */
-	private boolean isCompact()
+	boolean isCompact()
 	{
 		return cellSize < matrix.getCompactCellSize();
 	}
@@ -719,7 +721,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param interpolation the proportion of first color in resulting one
 	 * @return the resulting mixed color
 	 */
-	private static Color interpolate(Color color1, Color color2, double interpolation)
+	static Color interpolateColor(Color color1, Color color2, double interpolation)
 	{
 		int red = (int) (color1.getRed() * interpolation + color2.getRed() * (1 - interpolation));
 		int green = (int) (color1.getGreen() * interpolation + color2.getGreen() * (1 - interpolation));
