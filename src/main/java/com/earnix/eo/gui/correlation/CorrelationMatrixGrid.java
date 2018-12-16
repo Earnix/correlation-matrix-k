@@ -13,7 +13,6 @@ import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Correlation matrix grid component.
@@ -79,6 +78,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * If zoom is active, represents current zoom model, {@code null} otherwise.
 	 */
 	private /* Nullable */ Zoom zoom;
+	private double cellsHeight;
+	private double cellsWidth;
 
 	// endregion
 
@@ -110,8 +111,13 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		super.paintComponent(g);
 
+		cellsWidth = getWidth() - matrix.getBorderWidth() * 2;
+		cellsHeight = getHeight() - matrix.getBorderWidth() * 2;
+
+		// translating 
+		g2d.translate(matrix.getBorderWidth(), matrix.getBorderWidth());
+
 		double labelMargin = (1 - LABEL_HEIGHT_PROPORTION) * cellSize / 2;
-		g2d.setFont(labelsFont);
 
 		// Painting cells and highlights. 
 		// In case of compact mode - highlights are drawn over cells since sells are 
@@ -132,18 +138,19 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.setStroke(new BasicStroke(matrix.getGridLinesWidth()));
 		for (int i = 1; i <= matrix.length(); i++)
 		{
-			int x = (int) (getWidth() - cellSize * i);
-			g2d.drawLine(x, 0, x, getHeight());
+			int x = (int) (cellsWidth - cellSize * i);
+			g2d.drawLine(x, 0, x, (int) cellsHeight);
 		}
 
 		// drawing horizontal grid lines
 		for (int i = 0; i <= matrix.length() - 1; i++)
 		{
-			g2d.drawLine(0, (int) (i * cellSize), getWidth(), (int) (i * cellSize));
+			g2d.drawLine(0, (int) (i * cellSize), (int) cellsWidth, (int) (i * cellSize));
 		}
 
 		// drawing rows titles
 		g2d.setColor(matrix.getLabelsColor());
+		g2d.setFont(labelsFont);
 		for (int i = 0; i < matrix.length(); i++)
 		{
 			String label = abbreviate(matrix.getTitles().get(i));
@@ -153,16 +160,18 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// painting zoom
 		paintZoom(g2d);
 
-
-		// border
+		// painting border
+		g2d.translate(-matrix.getBorderWidth(), -matrix.getBorderWidth());
 		g2d.setStroke(new BasicStroke(matrix.getBorderWidth()));
 		g2d.setColor(matrix.getBorderColor());
-		g2d.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+		double borderShift = matrix.getBorderWidth() / 2;
+		g2d.drawRect((int) borderShift, (int) borderShift, (int) (getWidth() - borderShift * 2),
+				(int) (getHeight() - borderShift * 2));
 		g2d.dispose();
 	}
 
 	/**
-	 * If highlight is currently active, paint highlight lines
+	 * If highlight is currently active, paints highlight lines.
 	 *
 	 * @param g2d graphical context
 	 */
@@ -173,9 +182,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			int i = highlightIndex.i;
 			int j = highlightIndex.j;
 			g2d.setColor(matrix.getHighlightColor());
-			g2d.fillRect(0, (int) (j * cellSize), getWidth(), (int) Math.round(cellSize));
-			g2d.fillRect((int) (getWidth() - (matrix.length() - i) * cellSize), 0, (int) Math.round(cellSize),
-					getHeight());
+			g2d.fillRect(0, (int) (j * cellSize), (int) cellsWidth, (int) Math.round(cellSize));
+			g2d.fillRect((int) (cellsWidth - (matrix.length() - i) * cellSize), 0, (int) Math.round(cellSize),
+					(int) cellsHeight);
 		}
 	}
 
@@ -189,7 +198,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	Cell createCell(int i, int j)
 	{
 		Cell cell = new Cell();
-		cell.x = getWidth() - (matrix.length() - i) * cellSize;
+		cell.x = cellsWidth - (matrix.length() - i) * cellSize;
 		cell.y = j * cellSize;
 		cell.value = getValue(i, j);
 		cell.size = cellSize;
@@ -292,7 +301,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		zoom.zoomSelectionSize = zoom.length * cellSize;
 
 		// zoom cell size should take 1/4 of space
-		zoom.cellsSize = getHeight() / 4;
+		zoom.cellsSize = cellsHeight / 4;
 		zoom.cellSize = zoom.cellsSize / zoom.length;
 
 		zoom.labelsMargin = zoom.cellSize * (1 - LABEL_HEIGHT_PROPORTION) / 2;
@@ -301,7 +310,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// preparing, measuring and abbreviating horizontal labels
 		zoom.horizontalLabels = new ArrayList<>(matrix.getTitles().subList(zoom.j, zoom.j + zoom.length));
 		zoom.horizontalLabelsWidth = getLabelsWidth(zoom.horizontalLabels, zoom.font) + zoom.labelsMargin * 2;
-		double maxHorizontalLabelsWidth = getWidth() - zoom.cellsSize - 2 * zoom.labelsMargin;
+		double maxHorizontalLabelsWidth = cellsWidth - zoom.cellsSize - 2 * zoom.labelsMargin;
 		if (zoom.horizontalLabelsWidth > maxHorizontalLabelsWidth)
 		{
 			abbreviate(zoom.horizontalLabels, zoom.font, maxHorizontalLabelsWidth);
@@ -310,7 +319,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 		zoom.verticalLabels = new ArrayList<>(matrix.getTitles().subList(zoom.i, zoom.i + zoom.length));
 		zoom.verticalLabelsWidth = getLabelsWidth(zoom.verticalLabels, zoom.font) + zoom.labelsMargin * 2;
-		double maxVerticalLabelsWidth = getHeight() - zoom.cellsSize;
+		double maxVerticalLabelsWidth = cellsHeight - zoom.cellsSize;
 
 		if (zoom.verticalLabelsWidth > maxVerticalLabelsWidth)
 		{
@@ -321,7 +330,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		zoom.cellsSize = zoom.cellSize * zoom.length;
 		zoom.width = zoom.horizontalLabelsWidth + zoom.cellsSize;
 		zoom.height = zoom.verticalLabelsWidth + zoom.cellsSize;
-		zoom.x = getWidth() - zoom.width;
+		zoom.x = cellsWidth - zoom.width;
 		zoom.y = 0;
 
 		return zoom;
@@ -339,7 +348,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			// drawing zoom selection border
 			g2d.setColor(matrix.getZoomSelectionBorderColor());
 			g2d.setStroke(new BasicStroke(matrix.getZoomSelectionBorderWidth()));
-			g2d.drawRect((int) (getWidth() - (matrix.length() - zoom.i) * cellSize), (int) (zoom.j * cellSize),
+			g2d.drawRect((int) (cellsWidth - (matrix.length() - zoom.i) * cellSize), (int) (zoom.j * cellSize),
 					(int) zoom.zoomSelectionSize, (int) zoom.zoomSelectionSize);
 
 			// drawing zoom area
@@ -430,7 +439,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		{
 			zoom = createZoom(optionalCellCoordinates.get());
 		}
-		else if (e.getX() < getWidth() - cellSize * matrix.length())
+		else if (e.getX() < getWidth() - cellSize * matrix.length() - matrix.getBorderWidth())
 		{
 			// label is pressed
 			int ij = (int) (e.getY() / cellSize);
@@ -473,7 +482,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		if (zoom != null)
 		{
 			Optional<CellIndex> cellIndex = detectCell(e.getX(), e.getY());
-			if(cellIndex.isPresent()) {
+			if (cellIndex.isPresent())
+			{
 				zoom = createZoom(cellIndex.get());
 				repaint = true;
 			}
@@ -481,7 +491,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 		if (highlightIndex != null)
 		{
-			if (e.getX() < getWidth() - cellSize * matrix.length())
+			if (e.getX() < getWidth() - cellSize * matrix.length() - matrix.getBorderWidth())
 			{
 				int ij = (int) (e.getY() / cellSize);
 				highlightIndex = new CellIndex(ij, ij);
@@ -546,7 +556,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			text += "</html>";
 			return text;
 		}
-		else if (event.getX() < (getWidth() - cellSize * matrix.length()))
+		else if (event.getX() < (getWidth() - cellSize * matrix.length() - matrix.getBorderWidth()))
 		{
 			int i = (int) (event.getY() / cellSize);
 			return "<html><p>" + matrix.getTitles().get(i) + "</p></html>";
@@ -595,10 +605,11 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		double availableWidth =
 				matrix.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - matrix.getGridMargin() * 2;
 		double availableHeight = matrix.getHeight() - matrix.getGridMargin() * 2;
-		float fontHeight = (float) (availableHeight / matrix.length());
-		double fontWidth = getLabelsWidth(matrix.getTitles(), matrix.getFont().deriveFont(fontHeight));
-		double margin = fontHeight * (1 - LABEL_HEIGHT_PROPORTION) / 2;
-		double labelCellProportion = (fontWidth + margin * 2) / (fontHeight + margin * 2);
+
+		float testFontHeight = (float) ((availableHeight - matrix.getBorderWidth() * 2) / matrix.length());
+		double testLabelWidth = getLabelsWidth(matrix.getTitles(), matrix.getFont().deriveFont(testFontHeight));
+		double testLabelMargin = testFontHeight * (1 - LABEL_HEIGHT_PROPORTION) / 2;
+		double labelCellProportion = (testLabelWidth + testLabelMargin * 2) / (testFontHeight + testLabelMargin * 2);
 
 		boolean horizontalFit;
 		if (availableHeight > availableWidth)
@@ -613,7 +624,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			// If enough - the grid is fitting vertically or exactly, and cell size becomes known.
 
 			double labelsWidth = availableWidth - availableHeight;
-			double requiredLabelsWidth = (availableHeight / matrix.length()) * labelCellProportion;
+			double requiredLabelsWidth =
+					((availableHeight - matrix.getBorderWidth() * 2) / matrix.length()) * labelCellProportion;
 			horizontalFit = !(labelsWidth > requiredLabelsWidth);
 		}
 
@@ -622,37 +634,39 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			// In case of horizontal fit width is known, but height is unknown. 
 			// Let's calculate it using system of equations:
 			//
-			// height / length = label cell height
-			// title cell width / label cell height = label cell proportion
+			// (height - border * 2) / length = label cell height
+			// label cell width / label cell height = label cell proportion
 			// width = label cell width + height
-			//
+
 			// as result:
 			//
-			// label cell height = width / (length + label cell proportion)
+			// label cell height = (width - border * 2) / (length + label cell proportion)
 
-			cellSize = availableWidth / (matrix.length() + labelCellProportion);
+			cellSize = (availableWidth - matrix.getBorderWidth() * 2) / (matrix.length() + labelCellProportion);
 		}
 		else
 		{
-			cellSize = availableHeight / matrix.length();
+			cellSize = (availableHeight - matrix.getBorderWidth() * 2) / matrix.length();
 		}
 		labelsFont = matrix.getFont().deriveFont((float) cellSize * LABEL_HEIGHT_PROPORTION);
 
 		// correcting cell size if label is too long because of not proportional font scaling
 		double labelWidth = getLabelsWidth(matrix.getTitles(), labelsFont);
+		double labelMargins = cellSize * (1 - LABEL_HEIGHT_PROPORTION);
 		double error =
-				availableWidth - cellSize * matrix.length() - labelWidth - (cellSize * (1 - LABEL_HEIGHT_PROPORTION));
+				availableWidth - matrix.getBorderWidth() * 2 - cellSize * matrix.length() - labelWidth - labelMargins;
 
-		cellSize = Math.min(cellSize + error / matrix.length(), availableHeight / matrix.length());
+		cellSize = Math.min(cellSize + error / matrix.length(),
+				(availableHeight - matrix.getBorderWidth() * 2) / matrix.length());
 
 		if (horizontalFit)
 		{
-			return new Dimension((int) availableWidth, (int) (matrix.length() * cellSize));
+			return new Dimension((int) availableWidth, (int) (matrix.length() * cellSize + matrix.getBorderWidth() * 2));
 		}
 		else
 		{
-			return new Dimension((int) (availableHeight + labelWidth + cellSize * (1 - LABEL_HEIGHT_PROPORTION)),
-					(int) availableHeight);
+			int width = (int) (availableHeight + labelWidth);
+			return new Dimension(width, (int) availableHeight);
 		}
 	}
 
@@ -698,7 +712,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 */
 	private Optional<CellIndex> detectCell(int x, int y)
 	{
-		double cellsStart = getWidth() - cellSize * matrix.length();
+		double cellsStart = getWidth() - cellSize * matrix.length() - matrix.getBorderWidth();
 		if (x > cellsStart)
 		{
 			int i = (int) ((x - cellsStart) / cellSize);
