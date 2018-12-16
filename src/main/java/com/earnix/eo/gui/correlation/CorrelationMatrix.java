@@ -46,7 +46,7 @@ public class CorrelationMatrix extends JPanel
 	/**
 	 * Grid border width.
 	 */
-	private float borderWidth = 2;
+	private int borderWidth = 2;
 
 	/**
 	 * Grid border color.
@@ -425,12 +425,12 @@ public class CorrelationMatrix extends JPanel
 		return this;
 	}
 
-	public float getBorderWidth()
+	public int getBorderWidth()
 	{
 		return borderWidth;
 	}
 
-	public CorrelationMatrix setBorderWidth(float borderWidth)
+	public CorrelationMatrix setBorderWidth(int borderWidth)
 	{
 		this.borderWidth = borderWidth;
 		return this;

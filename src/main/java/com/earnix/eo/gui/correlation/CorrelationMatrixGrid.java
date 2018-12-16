@@ -45,7 +45,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	/**
 	 * Coefficient which restricts oval from squeezing too much.
 	 */
-	private static final double SQUEEZE_COEFFICIENT = 0.8;
+	private static final float SQUEEZE_COEFFICIENT = 0.8f;
 
 	/**
 	 * Maximum label display length in characters.
@@ -82,7 +82,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * If zoom is active, represents current zoom model, {@code null} otherwise.
 	 */
 	private /* Nullable */ Zoom zoom;
-	
+
 	// endregion
 
 	/**
@@ -96,8 +96,10 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		addMouseMotionListener(this);
 		setOpaque(false);
 		ToolTipManager.sharedInstance().registerComponent(this);
-		
+
+		// caching common values
 		ellipseStroke = new BasicStroke(matrix.getEllipseStrokeWidth());
+		setBorder(BorderFactory.createLineBorder(matrix.getBorderColor(), matrix.getBorderWidth()));
 	}
 
 	// region Painting methods
@@ -165,14 +167,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		// painting zoom
 		paintZoom(g2d);
 
-		// painting border
 		g2d.translate(-matrix.getBorderWidth(), -matrix.getBorderWidth());
-		g2d.setStroke(new BasicStroke(matrix.getBorderWidth()));
-		g2d.setColor(matrix.getBorderColor());
-		double borderShift = matrix.getBorderWidth() / 2;
-		g2d.drawRect((int) Math.ceil(borderShift), (int) Math.ceil(borderShift), (int) Math.ceil(getWidth() - borderShift * 4),
-				(int) Math.ceil(getHeight() - borderShift * 4));
-		g2d.dispose();
 	}
 
 	/**
@@ -248,9 +243,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 		// preparing shape properties
 		double margin = cell.size * (1 - CIRCLE_HEIGHT_PROPORTION) / 2;
+
 		double radiusY = cell.size - margin * 2;
-		double radiusX =
-				(cell.size - margin * 2 /* radius margin */) * (1.0 - Math.abs(cell.value) * SQUEEZE_COEFFICIENT);
+		double radiusX = radiusY * (1.0 - Math.abs(cell.value) * SQUEEZE_COEFFICIENT);
 		Color fillColor;
 
 		double rotation;
@@ -277,9 +272,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			AffineTransform nextTransform = (AffineTransform) currentTransform.clone();
 			nextTransform.rotate(rotation, cell.x + cell.size / 2, cell.y + cell.size / 2);
 			g2d.setTransform(nextTransform);
-			int x = (int) Math.ceil(cell.x - radiusX / 2 + cell.size / 2);
+			int x = (int) Math.ceil(cell.x + (cell.size - radiusX) / 2);
 			int y = (int) Math.ceil(cell.y + margin);
-			
+
 			g2d.fillOval(x, y, (int) Math.ceil(radiusX), (int) Math.ceil(radiusY));
 			g2d.setColor(matrix.getEllipseStrokeColor());
 			g2d.setStroke(ellipseStroke);
@@ -614,9 +609,14 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		double availableWidth =
 				matrix.getWidth() - matrix.getTemperatureScalePanel().getDefinedWidth() - matrix.getGridMargin() * 2;
 		double availableHeight = matrix.getHeight() - matrix.getGridMargin() * 2;
+		double borders = matrix.getBorderWidth() * 2;
 
-		float testFontHeight = (float) ((availableHeight - matrix.getBorderWidth() * 2) / matrix.length());
-		double testLabelWidth = getLabelsWidth(matrix.getTitles(), matrix.getFont().deriveFont(testFontHeight));
+		// calculating title cell proportion for synthetic  font height
+
+
+		double testHeight = Math.min(availableHeight - borders, availableWidth - borders);
+		double testFontHeight = (testHeight / matrix.length());
+		double testLabelWidth = getLabelsWidth(matrix.getTitles(), matrix.getFont().deriveFont((float) testFontHeight));
 		double testLabelMargin = testFontHeight * (1 - LABEL_HEIGHT_PROPORTION) / 2;
 		double labelCellProportion = (testLabelWidth + testLabelMargin * 2) / (testFontHeight + testLabelMargin * 2);
 
@@ -633,8 +633,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			// If enough - the grid is fitting vertically or exactly, and cell size becomes known.
 
 			double labelsWidth = availableWidth - availableHeight;
-			double requiredLabelsWidth =
-					((availableHeight - matrix.getBorderWidth() * 2) / matrix.length()) * labelCellProportion;
+			double requiredLabelsWidth = ((availableHeight - borders) / matrix.length()) * labelCellProportion;
 			horizontalFit = !(labelsWidth > requiredLabelsWidth);
 		}
 
@@ -643,40 +642,44 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			// In case of horizontal fit width is known, but height is unknown. 
 			// Let's calculate it using system of equations:
 			//
-			// (height - border * 2) / length = label cell height
+			// (height - borders) / length = label cell height
 			// label cell width / label cell height = label cell proportion
 			// width = label cell width + height
-
+			//
 			// as result:
 			//
 			// label cell height = (width - border * 2) / (length + label cell proportion)
 
-			cellSize = (availableWidth - matrix.getBorderWidth() * 2) / (matrix.length() + labelCellProportion);
+			cellSize = (availableWidth - borders) / (matrix.length() + labelCellProportion);
 		}
 		else
 		{
-			cellSize = (availableHeight - matrix.getBorderWidth() * 2) / matrix.length();
+			cellSize = (availableHeight - borders) / matrix.length();
 		}
+		
 		labelsFont = matrix.getFont().deriveFont((float) cellSize * LABEL_HEIGHT_PROPORTION);
 
-		// correcting cell size if label is too long because of not proportional font scaling
+		// Now label width becomes an entry point for calculations.
+		// Correcting cell size if label is too long because of not proportional font scaling.
 		double labelWidth = getLabelsWidth(matrix.getTitles(), labelsFont);
 		double labelMargins = cellSize * (1 - LABEL_HEIGHT_PROPORTION);
-		double error =
-				availableWidth - matrix.getBorderWidth() * 2 - cellSize * matrix.length() - labelWidth - labelMargins;
-
-		cellSize = Math.min(cellSize + error / matrix.length(),
-				(availableHeight - matrix.getBorderWidth() * 2) / matrix.length());
-
+		double error = availableWidth - borders - cellSize * matrix.length() - labelWidth - labelMargins;
+		// to get less jerking - only reducing cell, not enlarging 
+		cellSize = Math.min(cellSize + error / matrix.length(), cellSize);
+		labelMargins = cellSize * (1 - LABEL_HEIGHT_PROPORTION);
+		
+		// calculating sizes based on cell size
 		if (horizontalFit)
 		{
-			return new Dimension((int) availableWidth,
-					(int) (matrix.length() * cellSize + matrix.getBorderWidth() * 2));
+			int width = (int) availableWidth;
+			int height = (int) (matrix.length() * cellSize + borders);
+			return new Dimension(width, height);
 		}
 		else
 		{
-			int width = (int) (availableHeight + labelWidth);
-			return new Dimension(width, (int) availableHeight);
+			int width = (int) (cellSize * matrix.length() + labelWidth + labelMargins + borders);
+			int height = (int) availableHeight;
+			return new Dimension(width, height);
 		}
 	}
 
