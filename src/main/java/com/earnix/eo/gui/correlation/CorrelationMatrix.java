@@ -153,7 +153,7 @@ public class CorrelationMatrix extends JPanel
 	 * If cell is smaller - compact display mode will be applied.
 	 * {@see com.earnix.eo.gui.correlation.CorrelationMatrixGrid#createCell(int, int)}
 	 */
-	private int compactCellSize = 50;
+	private int compactCellSize = 16;
 
 	/**
 	 * Margin between grid and it's parent (this component).

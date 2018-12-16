@@ -55,7 +55,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	/**
 	 * Link to main component.
 	 */
-	private CorrelationMatrix matrix;
+	private final CorrelationMatrix matrix;
 
 	// region Current presentational state
 
@@ -69,6 +69,10 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 */
 	private Font labelsFont;
 
+	private double cellsHeight;
+	private double cellsWidth;
+	private BasicStroke ellipseStroke;
+
 	/**
 	 * If highlight is active, contains indexes of cell which triggered it, {@code null} otherwise.
 	 */
@@ -78,9 +82,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * If zoom is active, represents current zoom model, {@code null} otherwise.
 	 */
 	private /* Nullable */ Zoom zoom;
-	private double cellsHeight;
-	private double cellsWidth;
-
+	
 	// endregion
 
 	/**
@@ -94,6 +96,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		addMouseMotionListener(this);
 		setOpaque(false);
 		ToolTipManager.sharedInstance().registerComponent(this);
+		
+		ellipseStroke = new BasicStroke(matrix.getEllipseStrokeWidth());
 	}
 
 	// region Painting methods
@@ -138,14 +142,15 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.setStroke(new BasicStroke(matrix.getGridLinesWidth()));
 		for (int i = 1; i <= matrix.length(); i++)
 		{
-			int x = (int) (cellsWidth - cellSize * i);
-			g2d.drawLine(x, 0, x, (int) cellsHeight);
+			int x = (int) Math.ceil(cellsWidth - cellSize * i);
+			g2d.drawLine(x, 0, x, (int) Math.ceil(cellsHeight));
 		}
 
 		// drawing horizontal grid lines
-		for (int i = 0; i <= matrix.length() - 1; i++)
+		for (int i = 1; i <= matrix.length() - 1; i++)
 		{
-			g2d.drawLine(0, (int) (i * cellSize), (int) cellsWidth, (int) (i * cellSize));
+			int y = (int) Math.ceil(i * cellSize);
+			g2d.drawLine(0, y, (int) Math.ceil(cellsWidth), y);
 		}
 
 		// drawing rows titles
@@ -165,8 +170,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.setStroke(new BasicStroke(matrix.getBorderWidth()));
 		g2d.setColor(matrix.getBorderColor());
 		double borderShift = matrix.getBorderWidth() / 2;
-		g2d.drawRect((int) borderShift, (int) borderShift, (int) (getWidth() - borderShift * 2),
-				(int) (getHeight() - borderShift * 2));
+		g2d.drawRect((int) Math.ceil(borderShift), (int) Math.ceil(borderShift), (int) Math.ceil(getWidth() - borderShift * 4),
+				(int) Math.ceil(getHeight() - borderShift * 4));
 		g2d.dispose();
 	}
 
@@ -213,6 +218,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 */
 	private void paintCells(Graphics2D g2d)
 	{
+		g2d.setStroke(ellipseStroke);
 		for (int i = 0; i < matrix.length(); i++)
 		{
 			for (int j = 0; j < matrix.length(); j++)
@@ -241,7 +247,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		}
 
 		// preparing shape properties
-		double margin = ((cell.size - cell.size * CIRCLE_HEIGHT_PROPORTION) / 2);
+		double margin = cell.size * (1 - CIRCLE_HEIGHT_PROPORTION) / 2;
 		double radiusY = cell.size - margin * 2;
 		double radiusX =
 				(cell.size - margin * 2 /* radius margin */) * (1.0 - Math.abs(cell.value) * SQUEEZE_COEFFICIENT);
@@ -271,18 +277,19 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			AffineTransform nextTransform = (AffineTransform) currentTransform.clone();
 			nextTransform.rotate(rotation, cell.x + cell.size / 2, cell.y + cell.size / 2);
 			g2d.setTransform(nextTransform);
-			g2d.fillOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX,
-					(int) radiusY);
+			int x = (int) Math.ceil(cell.x - radiusX / 2 + cell.size / 2);
+			int y = (int) Math.ceil(cell.y + margin);
+			
+			g2d.fillOval(x, y, (int) Math.ceil(radiusX), (int) Math.ceil(radiusY));
 			g2d.setColor(matrix.getEllipseStrokeColor());
-			g2d.setStroke(new BasicStroke(matrix.getEllipseStrokeWidth()));
-			g2d.drawOval((int) (cell.x - radiusX / 2 + cell.size / 2), (int) (cell.y + margin), (int) radiusX,
-					(int) radiusY);
+			g2d.setStroke(ellipseStroke);
+			g2d.drawOval(x, y, (int) Math.ceil(radiusX), (int) Math.ceil(radiusY));
 			g2d.setTransform(currentTransform);
-
 		}
 		else
 		{
-			g2d.fillRect((int) cell.x, (int) cell.y, (int) cell.size, (int) cell.size);
+			g2d.fillRect((int) Math.ceil(cell.x), (int) Math.ceil(cell.y), (int) Math.ceil(cell.size),
+					(int) Math.ceil(cell.size));
 		}
 	}
 
@@ -360,6 +367,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			g2d.drawRect((int) zoom.x, (int) zoom.y, (int) zoom.width, (int) zoom.height);
 
 			// drawing cells in zoom area
+			g2d.setStroke(ellipseStroke);
 			for (int l = 0; l < zoom.length; l++)
 			{
 				for (int m = 0; m < zoom.length; m++)
@@ -409,13 +417,14 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 				// painting vertical label
 				label = abbreviate(zoom.verticalLabels.get(l));
-				AffineTransform transform = new AffineTransform();
+				AffineTransform oldTransform = g2d.getTransform();
+				AffineTransform transform = (AffineTransform) oldTransform.clone();
 				int vx = (int) (zoom.x + zoom.horizontalLabelsWidth + (l + 1) * zoom.cellSize);
 				int vy = (int) (zoom.verticalLabelsWidth);
 				transform.rotate(-Math.PI / 2, vx, vy);
 				g2d.setTransform(transform);
 				g2d.drawString(label, (int) (vx + zoom.labelsMargin), (int) (vy - zoom.labelsMargin));
-				g2d.setTransform(new AffineTransform());
+				g2d.setTransform(oldTransform);
 			}
 		}
 	}
@@ -661,7 +670,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 		if (horizontalFit)
 		{
-			return new Dimension((int) availableWidth, (int) (matrix.length() * cellSize + matrix.getBorderWidth() * 2));
+			return new Dimension((int) availableWidth,
+					(int) (matrix.length() * cellSize + matrix.getBorderWidth() * 2));
 		}
 		else
 		{
