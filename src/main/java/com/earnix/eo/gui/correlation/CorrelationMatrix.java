@@ -46,12 +46,12 @@ public class CorrelationMatrix extends JPanel
 	/**
 	 * Grid border width.
 	 */
-	private int borderWidth = 2;
+	private int gridBorderWidth = 2;
 
 	/**
 	 * Grid border color.
 	 */
-	private Color borderColor = new Color(0x0);
+	private Color gridBorderColor = new Color(0x0);
 
 	/**
 	 * Color used to indicate positive correlations. Is mixed with background color.
@@ -160,8 +160,23 @@ public class CorrelationMatrix extends JPanel
 	 */
 	private int gridMargin = 20;
 
+	/**
+	 * Width of temperature scale's gradient.
+	 */
+	private float temperatureScaleGradientWidth = 20;
+
+	/**
+	 * Font to use for temperature scale's labels.
+	 */
+	private float temperatureScaleFontSize = 15;
+
+	/**
+	 * Amount of temperature scale labels.
+	 */
+	private int temperatureScaleLabelsCount = 10;
+
 	private final CorrelationMatrixGrid grid;
-	private final TemperatureScalePanel temperatureScalePanel;
+	private final TemperatureScale temperatureScalePanel;
 
 	/**
 	 * Creates correlation matrix component.
@@ -198,7 +213,7 @@ public class CorrelationMatrix extends JPanel
 		add(grid, constraints);
 
 		// placing temperature scale on the right side.
-		temperatureScalePanel = new TemperatureScalePanel(this);
+		temperatureScalePanel = new TemperatureScale(this);
 		temperatureScalePanel.setBackground(getBackground());
 		constraints.gridx = 1;
 		constraints.anchor = GridBagConstraints.EAST;
@@ -425,25 +440,25 @@ public class CorrelationMatrix extends JPanel
 		return this;
 	}
 
-	public int getBorderWidth()
+	public int getGridBorderWidth()
 	{
-		return borderWidth;
+		return gridBorderWidth;
 	}
 
-	public CorrelationMatrix setBorderWidth(int borderWidth)
+	public CorrelationMatrix setGridBorderWidth(int gridBorderWidth)
 	{
-		this.borderWidth = borderWidth;
+		this.gridBorderWidth = gridBorderWidth;
 		return this;
 	}
 
-	public Color getBorderColor()
+	public Color getGridBorderColor()
 	{
-		return borderColor;
+		return gridBorderColor;
 	}
 
-	public CorrelationMatrix setBorderColor(Color borderColor)
+	public CorrelationMatrix setGridBorderColor(Color gridBorderColor)
 	{
-		this.borderColor = borderColor;
+		this.gridBorderColor = gridBorderColor;
 		return this;
 	}
 
@@ -502,6 +517,39 @@ public class CorrelationMatrix extends JPanel
 		return this;
 	}
 
+	public float getTemperatureScaleGradientWidth()
+	{
+		return temperatureScaleGradientWidth;
+	}
+
+	public CorrelationMatrix setTemperatureScaleGradientWidth(float temperatureScaleGradientWidth)
+	{
+		this.temperatureScaleGradientWidth = temperatureScaleGradientWidth;
+		return this;
+	}
+
+	public float getTemperatureScaleFontSize()
+	{
+		return temperatureScaleFontSize;
+	}
+
+	public CorrelationMatrix setTemperatureScaleFontSize(float temperatureScaleFontSize)
+	{
+		this.temperatureScaleFontSize = temperatureScaleFontSize;
+		return this;
+	}
+
+	public int getTemperatureScaleLabelsCount()
+	{
+		return temperatureScaleLabelsCount;
+	}
+
+	public CorrelationMatrix setTemperatureScaleLabelsCount(int temperatureScaleLabelsCount)
+	{
+		this.temperatureScaleLabelsCount = temperatureScaleLabelsCount;
+		return this;
+	}
+
 	// endregion
 
 	public CorrelationMatrixGrid getGrid()
@@ -509,7 +557,7 @@ public class CorrelationMatrix extends JPanel
 		return grid;
 	}
 
-	public TemperatureScalePanel getTemperatureScalePanel()
+	public TemperatureScale getTemperatureScalePanel()
 	{
 		return temperatureScalePanel;
 	}

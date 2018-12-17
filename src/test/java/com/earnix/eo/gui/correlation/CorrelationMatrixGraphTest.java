@@ -22,7 +22,7 @@ public class CorrelationMatrixGraphTest
 	private static CorrelationMatrix matrix;
 	private static double[][] correlations;
 	private static double[][] correlationsSqr;
-	private static TemperatureScalePanel temperatureScale;
+	private static TemperatureScale temperatureScale;
 	private static CorrelationMatrixGrid grid;
 	private static JFrame frame;
 
