@@ -73,6 +73,6 @@ class TemperatureScale extends JPanel
 	{
 		float labelsWidth = getFontMetrics(font).stringWidth("-0.0");
 		int width = (int) Math.ceil(matrix.getTemperatureScaleGradientWidth() + labelsWidth + LABELS_MARGIN * 2);
-		return new Dimension(width, getParent().getHeight());
+		return new Dimension(width, matrix.getHeight() - matrix.getTemperatureScaleVerticalMargin() * 2);
 	}
 }

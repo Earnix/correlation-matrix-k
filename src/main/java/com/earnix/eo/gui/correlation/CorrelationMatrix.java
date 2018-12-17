@@ -10,7 +10,7 @@ import java.util.Objects;
  * Provides presentation customization settings. Does not provide correlations calculation functionality.
  * <br/>
  * There are two display modes of correlation matrix. If there is enough space for cell to take equal or
- * more then {@code 16} pixels (is customizable with {@link #setCompactCellSize(int)}), correlations are displayed s ovals, where oval radius
+ * more then {@code 16} pixels (is customizable with {@link #setCompactCellSize(int)}), correlations are displayed as ovals, where oval radius
  * depends on correlation square absolute value, and fill color depends on square correlation sign.
  * If there is not enough space - square correlations are displayed as rectangles with indication based on fill color.
  * {@link #setPositiveColor(Color)} is used for positive correlations and {@link #setNegativeColor(Color)} for
@@ -175,6 +175,11 @@ public class CorrelationMatrix extends JPanel
 	 */
 	private int temperatureScaleLabelsCount = 10;
 
+	/**
+	 * Top and bottom temperature scale insets
+	 */
+	private int temperatureScaleVerticalMargin = 5;
+
 	private final CorrelationMatrixGrid grid;
 	private final TemperatureScale temperatureScalePanel;
 
@@ -218,7 +223,7 @@ public class CorrelationMatrix extends JPanel
 		constraints.gridx = 1;
 		constraints.anchor = GridBagConstraints.EAST;
 		constraints.weightx = 0;
-		constraints.insets = new Insets(0, 0, 0, 0);
+		constraints.insets = new Insets(temperatureScaleVerticalMargin, 0, temperatureScaleVerticalMargin, 0);
 		add(temperatureScalePanel, constraints);
 	}
 
@@ -547,6 +552,17 @@ public class CorrelationMatrix extends JPanel
 	public CorrelationMatrix setTemperatureScaleLabelsCount(int temperatureScaleLabelsCount)
 	{
 		this.temperatureScaleLabelsCount = temperatureScaleLabelsCount;
+		return this;
+	}
+
+	public int getTemperatureScaleVerticalMargin()
+	{
+		return temperatureScaleVerticalMargin;
+	}
+
+	public CorrelationMatrix setTemperatureScaleVerticalMargin(int temperatureScaleVerticalMargin)
+	{
+		this.temperatureScaleVerticalMargin = temperatureScaleVerticalMargin;
 		return this;
 	}
 
