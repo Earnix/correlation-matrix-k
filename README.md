@@ -49,7 +49,7 @@ frame.getContentPane().add(matrix);
 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 frame.setVisible(true);
 ```
-See small runnable [example](/src/main/java/com/earnix/eo/gui/correlation/Example.java)
+See small runnable [example](/src/main/java/com/earnix/eo/gui/correlation/Example.java).
 
 ## Authors
 [Taras Maslov](https://github.com/linight)
