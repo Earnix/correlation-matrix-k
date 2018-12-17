@@ -26,7 +26,7 @@ import java.util.Optional;
 @SuppressWarnings("FieldCanBeLocal")
 public class CorrelationMatrixGrid extends JPanel implements MouseListener, MouseMotionListener
 {
-	
+
 	/**
 	 * A proportion of oval in cell.
 	 */

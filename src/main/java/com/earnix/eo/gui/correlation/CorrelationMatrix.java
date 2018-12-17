@@ -12,7 +12,7 @@ import java.util.Objects;
  * There are two display modes of correlation matrix. If there is enough space for cell to take equal or
  * more then {@code 16} pixels (is customizable with {@link #setCompactCellSize(int)}), correlations are displayed s ovals, where oval radius
  * depends on correlation square absolute value, and fill color depends on square correlation sign.
- * If there is not enough space - square correlations are displayed as rectangles with inication based on fill color.
+ * If there is not enough space - square correlations are displayed as rectangles with indication based on fill color.
  * {@link #setPositiveColor(Color)} is used for positive correlations and {@link #setNegativeColor(Color)} for
  * negative ones.
  * <br/>
