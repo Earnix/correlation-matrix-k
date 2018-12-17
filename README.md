@@ -22,7 +22,7 @@ Highlight feature covers row and column of specific value after click on title. 
 * `Maven` or `Gradle` dependency management
 
 ### Usage
-Download [release](https://github.com/Earnix/Correlation-Matrix-K/releases/tag/1.0), build with `Maven`, then add `Maven` or `Gradle` dependency to your project:
+Download [release](https://github.com/Earnix/Correlation-Matrix-K/releases/tag/1.0), build with [Maven](https://maven.apache.org/), then add [Maven](https://maven.apache.org/) or `Gradle` dependency to your project:
 ```
 <dependency>
 	<groupId>com.earnix.eo.gui</groupId>
@@ -50,14 +50,7 @@ frame.getContentPane().add(matrix);
 frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 frame.setVisible(true);
 ```
-
-
-See [example code](/src/main/java/com/earnix/eo/gui/correlation/Example.java)
-
-
-## Built With
-
-* [Maven](https://maven.apache.org/) - Dependency Management
+See small runnable [example].(/src/main/java/com/earnix/eo/gui/correlation/Example.java)
 
 ## Authors
 [Taras Maslov](https://github.com/linight)
