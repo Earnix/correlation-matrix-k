@@ -22,7 +22,7 @@ Highlight feature covers row and column of specific value after click on title. 
 * `Maven` or `Gradle` dependency management
 
 ### Usage
-Add `Maven` or `Gradle` dependency to your project:
+Download [release](https://github.com/Earnix/Correlation-Matrix-K/releases/tag/1.0), build with `Maven`, then add `Maven` or `Gradle` dependency to your project:
 ```
 <dependency>
 	<groupId>com.earnix.eo.gui</groupId>
