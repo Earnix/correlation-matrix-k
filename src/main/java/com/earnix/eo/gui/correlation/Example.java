@@ -1,9 +1,12 @@
 package com.earnix.eo.gui.correlation;
 
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import java.awt.Color;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Double.NaN;
@@ -96,7 +99,7 @@ public class Example
 		);
 
 		List<String> rowsTitles = Arrays.asList(
-				"Duration",
+				"Duration" + Collections.nCopies(1, "A"),
 				"Method",
 				"Year",
 				"Amount",

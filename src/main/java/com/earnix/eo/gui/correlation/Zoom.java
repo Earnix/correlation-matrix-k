@@ -1,6 +1,6 @@
 package com.earnix.eo.gui.correlation;
 
-import java.awt.*;
+import java.awt.Font;
 import java.util.List;
 
 /**

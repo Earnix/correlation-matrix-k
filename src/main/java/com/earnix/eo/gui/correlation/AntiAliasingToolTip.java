@@ -1,7 +1,9 @@
 package com.earnix.eo.gui.correlation;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JToolTip;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 
 /**
  * Custom tooltip used in matrix grid component.

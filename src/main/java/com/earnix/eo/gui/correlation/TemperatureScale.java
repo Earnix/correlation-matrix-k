@@ -1,7 +1,14 @@
 package com.earnix.eo.gui.correlation;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JPanel;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
+import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 
 /**
