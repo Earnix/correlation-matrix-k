@@ -11,7 +11,7 @@ import java.awt.geom.Point2D;
  */
 class TemperatureScale extends JPanel
 {
-	private static final int LABELS_MARGIN = 5;
+	static final int LABELS_MARGIN = 5;
 
 	private final CorrelationMatrix matrix;
 

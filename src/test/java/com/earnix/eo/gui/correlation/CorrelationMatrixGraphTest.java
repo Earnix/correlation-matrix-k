@@ -30,8 +30,6 @@ public class CorrelationMatrixGraphTest
 	@BeforeAll
 	static void before() throws InvocationTargetException, InterruptedException
 	{
-		//        System.setProperty("java.awt.headless", "true");
-
 		invokeAndWait(() -> {
 			correlations = new double[][] {
 					{ 1.0, NaN, -0.018409163780178296, NaN, -0.04195467750878402, 0.14580489215919248, NaN },
@@ -206,16 +204,28 @@ public class CorrelationMatrixGraphTest
 		Assertions.assertTrue(abbreviated.endsWith("..."));
 		Assertions.assertEquals(source.substring(0, 60), abbreviated.substring(0, 60));
 	}
-	
+
 	@Test
-	void formatCorrelationValue() {
+	void formatCorrelationValue()
+	{
 		Assertions.assertEquals("1.0000", grid.formatCorrelationValue(1));
 		Assertions.assertEquals("N/A", grid.formatCorrelationValue(Double.NaN));
 	}
-	
+
 	@Test
-	void getValue(){
+	void getValue()
+	{
 		Assertions.assertEquals(correlationsSqr[0][1], grid.getValue(0, 1));
 		Assertions.assertEquals(-correlationsSqr[0][2], grid.getValue(0, 2));
+	}
+	
+	@Test
+	void setTemperatureScale(){
+		Dimension preferredSize = temperatureScale.getPreferredSize();
+		Assertions.assertEquals(matrix.getHeight(), preferredSize.height);
+		Assertions.assertTrue(
+				matrix.getTemperatureScaleGradientWidth() + TemperatureScale.LABELS_MARGIN < preferredSize.width, 
+				"Temperature scale at least includes gradient and margins"
+		);
 	}
 }
