@@ -26,7 +26,6 @@ import java.util.Optional;
 @SuppressWarnings("FieldCanBeLocal")
 public class CorrelationMatrixGrid extends JPanel implements MouseListener, MouseMotionListener
 {
-
 	/**
 	 * A proportion of oval in cell.
 	 */
@@ -52,7 +51,6 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 */
 	private static final float ZOOM_CELLS_PROPORTION = 0.25f;
 
-
 	/**
 	 * Link to main component.
 	 */
@@ -73,12 +71,12 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	/**
 	 * Current component's height without borders
 	 */
-	private double cellsHeight;
+	double cellsHeight;
 
 	/**
 	 * Current component's width without borders
 	 */
-	private double cellsWidth;
+	double cellsWidth;
 
 	private BasicStroke ellipseStroke;
 	private final BasicStroke zoomSelectionBorderStroke;
@@ -397,6 +395,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		}
 	}
 
+	// endregion
+	
 	/**
 	 * Creates correlation cell model with pre-calculated coordinates for given data coordinates.
 	 *
@@ -563,6 +563,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		}
 	}
 
+	// region Interactivity
+	
 	/**
 	 * Detects if mouse was pressed on data cell, title cell or elsewhere.
 	 * In case of title cell - enables highlights (store title's index).
@@ -739,6 +741,8 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		return tooltip;
 	}
 
+	// endregion
+	
 	/**
 	 * Returns correlation value (square) for given cell coordinates. Source - {@link CorrelationMatrix#correlationsSqr}.
 	 *
@@ -897,7 +901,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param label the label to abbreviate if needed
 	 * @return the same label or label with length equal to the given length and 3 dots at the end.
 	 */
-	private static String abbreviate(String label, int length)
+	static String abbreviate(String label, int length)
 	{
 		if (label.length() > length)
 		{
@@ -915,7 +919,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param value given value
 	 * @return equal or next larger {@code int}
 	 */
-	private static int ceil(double value)
+	static int ceil(double value)
 	{
 		return (int) Math.ceil(value);
 	}
