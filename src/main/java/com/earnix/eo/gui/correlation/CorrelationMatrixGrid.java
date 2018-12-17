@@ -307,9 +307,9 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 			// painting zoom selection border in main grid
 			g2d.setColor(matrix.getZoomSelectionBorderColor());
 			g2d.setStroke(zoomSelectionBorderStroke);
-			int selectionX = ceil(cellsWidth - (matrix.length() - zoom.i) * cellSize);
-			int selectionY = ceil(zoom.j * cellSize);
-			g2d.drawRect(selectionX, selectionY, ceil(zoom.zoomSelectionSize), ceil(zoom.zoomSelectionSize));
+			int selectionX = (int) (cellsWidth - (matrix.length() - zoom.i) * cellSize);
+			int selectionY = (int) (zoom.j * cellSize);
+			g2d.drawRect(selectionX, selectionY, (int) (zoom.zoomSelectionSize), (int) (zoom.zoomSelectionSize));
 
 			// clearing zoom area
 			g2d.setBackground(matrix.getBackground());
