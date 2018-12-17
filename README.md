@@ -18,8 +18,8 @@ Highlight feature covers row and column of specific value after click on title. 
 ## Getting Started
 
 ### Prerequisites
-* `Java SE 8` or later
-* `Maven` or `Gradle` dependency management
+* `Java SE 8` or later.
+* [Maven](https://maven.apache.org/) dependency management.
 
 ### Usage
 Download [release](https://github.com/Earnix/Correlation-Matrix-K/releases/tag/1.0), build with [Maven](https://maven.apache.org/), then add [Maven](https://maven.apache.org/) or `Gradle` dependency to your project:
