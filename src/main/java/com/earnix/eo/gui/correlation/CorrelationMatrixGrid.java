@@ -750,7 +750,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param j column index
 	 * @return correlation square value
 	 */
-	private double getValue(int i, int j)
+	double getValue(int i, int j)
 	{
 		double value;
 		if (matrix.getCorrelations()[i][j] < 0)
@@ -844,7 +844,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 	 * @param value value to format
 	 * @return formatted value as {@link String}
 	 */
-	private String formatCorrelationValue(double value)
+	String formatCorrelationValue(double value)
 	{
 		if (Double.isNaN(value))
 		{

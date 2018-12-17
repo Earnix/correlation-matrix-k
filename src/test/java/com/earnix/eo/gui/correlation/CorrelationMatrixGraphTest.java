@@ -75,9 +75,6 @@ public class CorrelationMatrixGraphTest
 			frame.setVisible(true);
 			frame.getContentPane().revalidate();
 		});
-
-
-//		Thread.sleep(10_000);
 	}
 
 	@Test
@@ -118,11 +115,14 @@ public class CorrelationMatrixGraphTest
 
 			// checking cells vertical lay-outing;
 			Cell cell_1_1 = matrix.getGrid().createCell(1, 1);
-			Assertions
-					.assertEquals(expectedCellSize, cell_1_1.y - cell_1_0.y, 1, "Cells should be located in column");
+			Assertions.assertEquals(expectedCellSize, cell_1_1.y - cell_1_0.y, 1, "Cells should be located in column");
 
 			// checking cell value
 			Assertions.assertEquals(correlationsSqr[1][0], cell_1_0.value, "Value should match input data");
+
+			// checking negative value
+			Cell cell_0_2 = grid.createCell(0, 2);
+			Assertions.assertEquals(-correlationsSqr[0][2], cell_0_2.value);
 		});
 
 
@@ -132,9 +132,9 @@ public class CorrelationMatrixGraphTest
 	void zoom() throws InvocationTargetException, InterruptedException
 	{
 		invokeAndWait(() -> {
-			
+
 			Dimension preferredSize = grid.getPreferredSize();
-			
+
 			Zoom zoom = grid.createZoom(new CellIndex(0, 0));
 			Assertions.assertEquals(zoom.length, matrix.getZoomLength(),
 					"Amount of cells in zoom (in square) must match matrix parameter");
@@ -147,18 +147,13 @@ public class CorrelationMatrixGraphTest
 
 			Assertions.assertTrue(zoom.horizontalLabelsWidth + zoom.cellsSize <= preferredSize.width,
 					"Zoom labels sizing");
-			
-			Assertions.assertEquals(
-					grid.cellsHeight, 
-					zoom.height, 1d,
-					"Zoom vertical labels sizing with long label"
-			);
+
+			Assertions.assertEquals(grid.cellsHeight, zoom.height, 1d, "Zoom vertical labels sizing with long label");
 
 			Assertions.assertTrue(zoom.verticalLabels.get(0).endsWith("..."), "Zoom label abbreviation");
 
-			Assertions.assertTrue( zoom.verticalLabels.get(0).length() < 100,
-					"Long label must be abbreviated");
-			
+			Assertions.assertTrue(zoom.verticalLabels.get(0).length() < 100, "Long label must be abbreviated");
+
 			Assertions.assertEquals(0, zoom.y);
 			Assertions.assertEquals(grid.cellsWidth - zoom.width, zoom.x, "Zoom must be located at top right corner");
 
@@ -197,16 +192,30 @@ public class CorrelationMatrixGraphTest
 	}
 
 	@Test
-	void ceil(){
+	void ceil()
+	{
 		Assertions.assertEquals(CorrelationMatrixGrid.ceil(0.1), 1);
 	}
-	
+
 	@Test
-	void abbreviate(){
+	void abbreviate()
+	{
 		String source = String.join("", Collections.nCopies(100, "A"));
 		String abbreviated = CorrelationMatrixGrid.abbreviate(source, 64);
 		Assertions.assertEquals(64, abbreviated.length());
 		Assertions.assertTrue(abbreviated.endsWith("..."));
 		Assertions.assertEquals(source.substring(0, 60), abbreviated.substring(0, 60));
+	}
+	
+	@Test
+	void formatCorrelationValue() {
+		Assertions.assertEquals("1.0000", grid.formatCorrelationValue(1));
+		Assertions.assertEquals("N/A", grid.formatCorrelationValue(Double.NaN));
+	}
+	
+	@Test
+	void getValue(){
+		Assertions.assertEquals(correlationsSqr[0][1], grid.getValue(0, 1));
+		Assertions.assertEquals(-correlationsSqr[0][2], grid.getValue(0, 2));
 	}
 }
