@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/Earnix/correlation-matrix-k.svg?branch=master)](https://travis-ci.org/Earnix/correlation-matrix-k)
 # Correlation-Matrix-K
 
-Library provides correlation matrix UI component for Swing. Consist of proportionally resizing correlation matrix and temperature scale pane. Provides presentation customization settings. Does not provide correlations calculation functionality.
+Library provides correlation matrix UI component for Swing. Consist of proportionally resizing correlation matrix and temperature scale pane. Provides presentation customization settings. Does not provide correlations calculation functionality. Component anti-aliasing is explicitly enabled.
 
 A correlation matrix is a table showing correlation coefficients between variables. Each cell in the table shows the correlation between two variables. A correlation matrix is used as a way to summarize data, as an input into a more advanced analysis, and as a diagnostic for advanced analyses.
 
