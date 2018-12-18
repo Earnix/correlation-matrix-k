@@ -99,7 +99,7 @@ public class Example
 		);
 
 		List<String> rowsTitles = Arrays.asList(
-				"Duration" + Collections.nCopies(1, "A"),
+				"Duration",
 				"Method",
 				"Year",
 				"Amount",
