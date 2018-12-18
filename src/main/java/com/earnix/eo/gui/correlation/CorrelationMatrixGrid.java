@@ -224,7 +224,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 
 	/**
 	 * Creates and paints grid cells content into give graphical context.
-	 * Skips diagonal cells and cells over the diagonal in not compact mode.
+	 * Skips diagonal cells and cells over the diagonal.
 	 *
 	 * @param g2d component's graphical context
 	 */
@@ -233,13 +233,11 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 		g2d.setStroke(ellipseStroke);
 		for (int i = 0; i < matrix.length(); i++)
 		{
-			for (int j = 0; j < matrix.length(); j++)
+			// painting cells only below the diagonal
+			for (int j = i + 1; j < matrix.length(); j++)
 			{
-				if (j > i || (isCompact() && j != i))
-				{
-					Cell cell = createCell(i, j);
-					paintCell(g2d, cell);
-				}
+				Cell cell = createCell(i, j);
+				paintCell(g2d, cell);
 			}
 		}
 	}
@@ -339,7 +337,7 @@ public class CorrelationMatrixGrid extends JPanel implements MouseListener, Mous
 				{
 					int i = zoom.i + l;
 					int j = zoom.j + m;
-					if (i != j) // skipping diagonal
+					if (i < j) // painting cells only below the diagonal
 					{
 						// creating and painting zoom grid cell
 						Cell cell = new Cell();
