@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/Earnix/correlation-matrix-k.svg?branch=master)](https://travis-ci.org/Earnix/correlation-matrix-k)
+[![Build Status](https://travis-ci.org/Earnix/Correlation-Matrix-K.svg?branch=master)](https://travis-ci.org/Earnix/Correlation-Matrix-K)
 # Correlation-Matrix-K
 
 Library provides correlation matrix UI component for Swing. Consist of proportionally resizing correlation matrix and temperature scale pane. Provides presentation customization settings. Does not provide correlations calculation functionality. Component anti-aliasing is explicitly enabled.
