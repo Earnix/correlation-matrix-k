@@ -6,7 +6,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import java.awt.Color;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Double.NaN;
