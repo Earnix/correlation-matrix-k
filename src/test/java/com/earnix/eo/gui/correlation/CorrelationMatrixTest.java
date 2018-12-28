@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
  * @author Taras Maslov
  * 12/5/2018
  */
-public class CorrelationMatrixGraphTest
+class CorrelationMatrixTest
 {
 	private static CorrelationMatrix matrix;
 	private static double[][] correlations;
@@ -60,8 +60,8 @@ public class CorrelationMatrixGraphTest
 							"Status", "Score");
 
 			matrix = new CorrelationMatrix(rowsTypes, rowsTitles, correlations, correlationsSqr);
-			grid = matrix.getGrid();
-			temperatureScale = matrix.getTemperatureScalePanel();
+			grid = matrix.grid;
+			temperatureScale = matrix.temperatureScalePanel;
 
 			frame = new JFrame();
 			frame.setTitle("Correlation Matrix K");
@@ -89,7 +89,6 @@ public class CorrelationMatrixGraphTest
 		invokeAndWait(() -> {
 			Assertions.assertTrue(matrix.getPreferredSize().width > matrix.getPreferredSize().getHeight());
 			matrix.setSize(500, 500);
-			CorrelationMatrixGrid grid = matrix.getGrid();
 			Assertions.assertTrue(grid.getPreferredSize().width > grid.getPreferredSize().height);
 			matrix.setSize(1200, 800);
 		});
@@ -99,20 +98,20 @@ public class CorrelationMatrixGraphTest
 	void cell() throws InvocationTargetException, InterruptedException
 	{
 		invokeAndWait(() -> {
-			Dimension preferredSize = matrix.getGrid().getPreferredSize();
+			Dimension preferredSize = grid.getPreferredSize();
 			double expectedCellSize = preferredSize.height / (double) matrix.length();
-			Cell cell_0_0 = matrix.getGrid().createCell(0, 0);
+			Cell cell_0_0 = grid.createCell(0, 0);
 			Assertions.assertEquals(cell_0_0.size, preferredSize.height / (double) matrix.length(), 1d,
 					"Cell size should be equal to height / length");
 			Assertions.assertEquals(cell_0_0.y, 0, 0.1, "Top-left cell should have 0 y coordinate");
 
 			// checking cells horizontal lay-outing
-			Cell cell_1_0 = matrix.getGrid().createCell(1, 0);
+			Cell cell_1_0 = grid.createCell(1, 0);
 			Assertions.assertEquals(preferredSize.height / (double) matrix.length(), cell_1_0.x - cell_0_0.x, 1,
 					"Cells should be located in row");
 
 			// checking cells vertical lay-outing;
-			Cell cell_1_1 = matrix.getGrid().createCell(1, 1);
+			Cell cell_1_1 = grid.createCell(1, 1);
 			Assertions.assertEquals(expectedCellSize, cell_1_1.y - cell_1_0.y, 1, "Cells should be located in column");
 
 			// checking cell value
@@ -164,7 +163,7 @@ public class CorrelationMatrixGraphTest
 	{
 		invokeAndWait(() -> {
 			double proportion = 0.7;
-			Color result = CorrelationMatrixGrid.interpolateColor(Color.BLACK, Color.WHITE, proportion);
+			Color result = Utilities.interpolateColor(Color.BLACK, Color.WHITE, proportion);
 			Assertions.assertEquals(255 - 255 * proportion, result.getRed(), 1, "Red must be interpolated");
 			Assertions.assertEquals(255 - 255 * proportion, result.getGreen(), 1, "Green must be interpolated");
 			Assertions.assertEquals(255 - 255 * proportion, result.getBlue(), 1, "Blue must be interpolated");
@@ -192,14 +191,14 @@ public class CorrelationMatrixGraphTest
 	@Test
 	void ceil()
 	{
-		Assertions.assertEquals(CorrelationMatrixGrid.ceil(0.1), 1);
+		Assertions.assertEquals(Utilities.ceil(0.1), 1);
 	}
 
 	@Test
 	void abbreviate()
 	{
 		String source = String.join("", Collections.nCopies(100, "A"));
-		String abbreviated = CorrelationMatrixGrid.abbreviate(source, 64);
+		String abbreviated = Utilities.abbreviate(source, (short) 64);
 		Assertions.assertEquals(64, abbreviated.length());
 		Assertions.assertTrue(abbreviated.endsWith("..."));
 		Assertions.assertEquals(source.substring(0, 60), abbreviated.substring(0, 60));
@@ -208,24 +207,24 @@ public class CorrelationMatrixGraphTest
 	@Test
 	void formatCorrelationValue()
 	{
-		Assertions.assertEquals("1.0000", grid.formatCorrelationValue(1));
-		Assertions.assertEquals("N/A", grid.formatCorrelationValue(Double.NaN));
+		Assertions.assertEquals("1.0000", Utilities.formatCorrelationValue(1, (short) 4));
+		Assertions.assertEquals("N/A", Utilities.formatCorrelationValue(Double.NaN, (short) 4));
 	}
 
 	@Test
 	void getValue()
 	{
-		Assertions.assertEquals(correlationsSqr[0][1], grid.getValue(0, 1));
-		Assertions.assertEquals(-correlationsSqr[0][2], grid.getValue(0, 2));
+		Assertions.assertEquals(correlationsSqr[0][1], matrix.getValue(0, 1));
+		Assertions.assertEquals(-correlationsSqr[0][2], matrix.getValue(0, 2));
 	}
-	
+
 	@Test
-	void setTemperatureScale(){
+	void setTemperatureScale()
+	{
 		Dimension preferredSize = temperatureScale.getPreferredSize();
-		Assertions.assertEquals(matrix.getHeight(), preferredSize.height);
+		Assertions.assertEquals(matrix.getHeight() - matrix.temperatureScaleVerticalMargin * 2, preferredSize.height);
 		Assertions.assertTrue(
-				matrix.getTemperatureScaleGradientWidth() + TemperatureScale.LABELS_MARGIN < preferredSize.width, 
-				"Temperature scale at least includes gradient and margins"
-		);
+				matrix.getTemperatureScaleGradientWidth() + TemperatureScale.LABELS_MARGIN < preferredSize.width,
+				"Temperature scale at least includes gradient and margins");
 	}
 }

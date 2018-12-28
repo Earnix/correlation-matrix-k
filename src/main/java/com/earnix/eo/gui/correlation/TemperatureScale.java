@@ -26,12 +26,14 @@ class TemperatureScale extends JPanel
 
 	/**
 	 * Creates new temperature scale for given {@link CorrelationMatrix}.
+	 *
+	 * @param matrix root matrix component
 	 */
 	TemperatureScale(CorrelationMatrix matrix)
 	{
 		this.matrix = matrix;
 		setOpaque(false);
-		font = matrix.getLabelsFont().deriveFont(matrix.getTemperatureScaleFontSize());
+		font = matrix.labelsFont.deriveFont(matrix.temperatureScaleFontSize);
 	}
 
 	/**
@@ -47,11 +49,11 @@ class TemperatureScale extends JPanel
 		super.paintComponent(g);
 
 		// painting gradient rect
-		float gradientWidth = matrix.getTemperatureScaleGradientWidth();
+		float gradientWidth = matrix.temperatureScaleGradientWidth;
 		Point2D.Double gradientEnd = new Point2D.Double();
 		gradientEnd.setLocation(0, getHeight());
 		float[] gradientFractions = new float[] { 0, 0.5f, 1 };
-		Color[] gradientColors = new Color[] { matrix.getPositiveColor(), Color.WHITE, matrix.getNegativeColor() };
+		Color[] gradientColors = new Color[] { matrix.positiveColor, Color.WHITE, matrix.negativeColor };
 		Paint paint = new LinearGradientPaint(0, 0, 0, getHeight(), gradientFractions, gradientColors);
 		g2d.setPaint(paint);
 		g2d.fillRect(0, 0, (int) gradientWidth, getHeight());
@@ -60,10 +62,10 @@ class TemperatureScale extends JPanel
 		g2d.setColor(Color.black);
 		g2d.setFont(font);
 		double current = 1.0;
-		int labelsCount = matrix.getTemperatureScaleLabelsCount();
+		int labelsCount = matrix.temperatureScaleLabelsCount;
 		float step = 2 / (float) labelsCount;
 		int heightStep = getHeight() / labelsCount;
-		g2d.setColor(matrix.getLabelsColor());
+		g2d.setColor(matrix.labelsColor);
 		for (int i = 0; i < labelsCount; i++)
 		{
 			g2d.drawString(String.format("%.1f", current), gradientWidth + LABELS_MARGIN, i * heightStep);
@@ -79,7 +81,7 @@ class TemperatureScale extends JPanel
 	public Dimension getPreferredSize()
 	{
 		float labelsWidth = getFontMetrics(font).stringWidth("-0.0");
-		int width = (int) Math.ceil(matrix.getTemperatureScaleGradientWidth() + labelsWidth + LABELS_MARGIN * 2);
-		return new Dimension(width, matrix.getHeight() - matrix.getTemperatureScaleVerticalMargin() * 2);
+		int width = Utilities.ceil(matrix.temperatureScaleGradientWidth + labelsWidth + LABELS_MARGIN * 2);
+		return new Dimension(width, matrix.getHeight() - matrix.temperatureScaleVerticalMargin * 2);
 	}
 }
