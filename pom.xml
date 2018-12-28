@@ -6,7 +6,7 @@
 
     <groupId>com.earnix.eo.gui</groupId>
     <artifactId>correlation-matrix-k</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4-SNAPSHOT</version>
 
     <name>Swing Correlation Matrix Component</name>
 
