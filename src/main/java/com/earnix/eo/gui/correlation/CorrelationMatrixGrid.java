@@ -84,12 +84,12 @@ class CorrelationMatrixGrid extends JPanel
 	private Font labelsFont;
 
 	/**
-	 * Current component's height without borders
+	 * Current component's height without borders. Package access for testing purpose.
 	 */
 	double cellsHeight;
 
 	/**
-	 * Current component's width without borders
+	 * Current component's width without borders. Package access for testing purpose.
 	 */
 	double cellsWidth;
 
